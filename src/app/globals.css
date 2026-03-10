@@ -1,0 +1,216 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+/* ============================================
+   CSS CUSTOM PROPERTIES / DESIGN TOKENS
+   ============================================ */
+:root {
+  /* Spacing scale (8px base) */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+  --space-4xl: 96px;
+  --space-5xl: 128px;
+  --space-6xl: 192px;
+
+  /* Typography */
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Transitions */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --duration-fast: 200ms;
+  --duration-normal: 400ms;
+  --duration-slow: 800ms;
+  --duration-glacial: 1200ms;
+}
+
+/* ============================================
+   DARK THEME (default)
+   ============================================ */
+[data-theme="dark"] {
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #111111;
+  --bg-tertiary: #1a1a1a;
+  --bg-elevated: #1e1e1e;
+  --bg-hover: #252525;
+
+  --text-primary: #f5f5f5;
+  --text-secondary: #a0a0a0;
+  --text-tertiary: #666666;
+  --text-inverse: #0a0a0a;
+
+  --accent: #c8ff00;
+  --accent-dim: #a3cc00;
+  --accent-glow: rgba(200, 255, 0, 0.15);
+
+  --border: #222222;
+  --border-subtle: #1a1a1a;
+  --border-accent: rgba(200, 255, 0, 0.3);
+
+  --gradient-hero: linear-gradient(135deg, #0a0a0a 0%, #111118 50%, #0a0a0a 100%);
+  --gradient-card: linear-gradient(145deg, #1a1a1a 0%, #111111 100%);
+
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 24px rgba(0,0,0,0.4);
+  --shadow-lg: 0 8px 48px rgba(0,0,0,0.5);
+  --shadow-glow: 0 0 40px rgba(200, 255, 0, 0.08);
+
+  --nav-bg: rgba(10, 10, 10, 0.85);
+}
+
+/* ============================================
+   LIGHT THEME
+   ============================================ */
+[data-theme="light"] {
+  --bg-primary: #fafafa;
+  --bg-secondary: #f0f0f0;
+  --bg-tertiary: #e8e8e8;
+  --bg-elevated: #ffffff;
+  --bg-hover: #eeeeee;
+
+  --text-primary: #111111;
+  --text-secondary: #555555;
+  --text-tertiary: #999999;
+  --text-inverse: #fafafa;
+
+  --accent: #1a1a1a;
+  --accent-dim: #333333;
+  --accent-glow: rgba(26, 26, 26, 0.08);
+
+  --border: #dddddd;
+  --border-subtle: #eeeeee;
+  --border-accent: rgba(26, 26, 26, 0.2);
+
+  --gradient-hero: linear-gradient(135deg, #fafafa 0%, #f0f0f5 50%, #fafafa 100%);
+  --gradient-card: linear-gradient(145deg, #ffffff 0%, #f5f5f5 100%);
+
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 24px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 48px rgba(0,0,0,0.1);
+  --shadow-glow: 0 0 40px rgba(0, 0, 0, 0.04);
+
+  --nav-bg: rgba(250, 250, 250, 0.85);
+}
+
+/* ============================================
+   BASE
+   ============================================ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scrollbar-gutter: stable;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  transition: background var(--duration-slow) var(--ease-out-expo),
+              color var(--duration-normal) var(--ease-out-expo);
+  overflow-x: hidden;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ============================================
+   FILM GRAIN OVERLAY
+   ============================================ */
+.grain-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* ============================================
+   MARQUEE
+   ============================================ */
+.marquee-strip {
+  overflow: hidden;
+  padding: var(--space-lg) 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.marquee-content {
+  display: flex;
+  gap: var(--space-3xl);
+  animation: marquee 30s linear infinite;
+  white-space: nowrap;
+  width: max-content;
+}
+
+.marquee-content span {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 300;
+  color: var(--text-tertiary);
+  letter-spacing: -0.01em;
+}
+
+.marquee-content span.sep {
+  opacity: 0.3;
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* ============================================
+   SCROLLBAR
+   ============================================ */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
+
+/* ============================================
+   THEME TRANSITION
+   ============================================ */
+html.theme-transitioning .theme-toggle-icon {
+  transition: transform var(--duration-slow) var(--ease-out-expo) !important;
+}
+
+html.theme-transitioning .sun-icon {
+  transform: rotate(180deg);
+}
+
+html.theme-transitioning .moon-icon {
+  transform: rotate(-180deg);
+}
