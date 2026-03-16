@@ -30,6 +30,7 @@
    ============================================ */
 [data-theme="dark"] {
   --bg-primary: #0d0d0d;
+  --bg-primary-rgb: 13, 13, 13;
   --bg-secondary: #111111;
   --bg-tertiary: #1a1a1a;
   --bg-elevated: #1f1f1f;
@@ -64,6 +65,7 @@
    ============================================ */
 [data-theme="light"] {
   --bg-primary: #faf6ef;
+  --bg-primary-rgb: 250, 246, 239;
   --bg-secondary: #f0e8dc;
   --bg-tertiary: #e8ddd0;
   --bg-elevated: #ede4d8;
