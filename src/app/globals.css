@@ -155,21 +155,23 @@ a {
 /* ============================================
    FONT UTILITY CLASSES
    ============================================ */
-.font-display {
-  font-family: var(--font-display);
-}
+@layer utilities {
+  .font-display {
+    font-family: var(--font-display);
+  }
 
-.font-accent {
-  font-family: var(--font-accent);
-  font-style: italic;
-}
+  .font-accent {
+    font-family: var(--font-accent);
+    font-style: italic;
+  }
 
-.font-body {
-  font-family: var(--font-body);
-}
+  .font-body {
+    font-family: var(--font-body);
+  }
 
-.font-mono {
-  font-family: var(--font-mono);
+  .font-mono {
+    font-family: var(--font-mono);
+  }
 }
 
 /* ============================================
