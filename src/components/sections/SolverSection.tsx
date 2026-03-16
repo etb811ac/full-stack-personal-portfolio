@@ -17,14 +17,6 @@ const SolverScene = dynamic(() => import('@/components/three/SolverScene'), {
   ),
 });
 
-const sceneSteps = [
-  { label: '🔧 Auto', id: 0 },
-  { label: '⚡ Electronics', id: 1 },
-  { label: '💻 Code', id: 2 },
-  { label: '🔌 PCB', id: 3 },
-  { label: '🔥 Solder', id: 4 },
-];
-
 const traits = [
   'DIY Mindset',
   'Hardware & Software',
@@ -39,25 +31,12 @@ const traits = [
 export default function SolverSection() {
   const [activeScene, setActiveScene] = useState(0);
   const sectionRef = useRef<HTMLElement>(null);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Auto-cycle
   useEffect(() => {
-    intervalRef.current = setInterval(() => {
-      setActiveScene((prev) => (prev + 1) % sceneSteps.length);
-    }, 3000);
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
+    const id = setInterval(() => setActiveScene(p => (p + 1) % 5), 3000);
+    return () => clearInterval(id);
   }, []);
-
-  const handleStepClick = (id: number) => {
-    setActiveScene(id);
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    intervalRef.current = setInterval(() => {
-      setActiveScene((prev) => (prev + 1) % sceneSteps.length);
-    }, 3000);
-  };
 
   useEffect(() => {
     const loadGSAP = async () => {
@@ -118,47 +97,6 @@ export default function SolverSection() {
             {/* Left: 3D Scene */}
             <div className="solver-3d-wrap opacity-0 relative w-full h-[550px] lg:h-[550px]">
               <SolverScene activeScene={activeScene} />
-              {/* Scene step tabs */}
-              <div
-                className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-wrap justify-center z-[2]"
-                style={{ gap: 'var(--space-sm)' }}
-              >
-                {sceneSteps.map((step) => (
-                  <button
-                    key={step.id}
-                    onClick={() => handleStepClick(step.id)}
-                    className="whitespace-nowrap cursor-pointer"
-                    style={
-                      activeScene === step.id
-                        ? {
-                            background: 'var(--accent)',
-                            color: 'var(--text-inverse)',
-                            border: '1px solid var(--accent)',
-                            borderRadius: '0',
-                            fontFamily: 'var(--font-mono)',
-                            fontSize: '11px',
-                            letterSpacing: '1px',
-                            padding: '8px 16px',
-                            cursor: 'pointer',
-                          }
-                        : {
-                            background: 'transparent',
-                            color: 'var(--text-secondary)',
-                            border: '1px solid var(--border)',
-                            borderRadius: '0',
-                            fontFamily: 'var(--font-mono)',
-                            fontSize: '11px',
-                            letterSpacing: '1px',
-                            padding: '8px 16px',
-                            cursor: 'pointer',
-                            transition: 'border-color var(--duration-fast), color var(--duration-fast)',
-                          }
-                    }
-                  >
-                    {step.label}
-                  </button>
-                ))}
-              </div>
             </div>
 
             {/* Right: Content */}
