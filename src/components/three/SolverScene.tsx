@@ -162,7 +162,7 @@ function PCBBoard({ opacity = 1 }: { opacity: number }) {
       {/* Board */}
       <mesh>
         <circleGeometry args={[1.5, 32]} />
-        <meshStandardMaterial color="#ff8c5a" transparent opacity={opacity * 0.8} />
+        <meshStandardMaterial color="#1a0e08" transparent opacity={opacity * 0.8} />
       </mesh>
       {/* Traces */}
       {traces.map((t, i) => {
