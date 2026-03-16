@@ -211,10 +211,32 @@ groupRef.current.rotation.y += 0.0003; // additive slow drift
 
 ### Ambient particles
 
-Keep pattern from existing scene: 200 pts, `#666666`, `opacity: 0.25`, slow rotation `* 0.01`:
 ```tsx
-function Particles() {
-  // existing implementation, just updated count and opacity
+function Particles({ count = 200 }: { count?: number }) {
+  const mesh = useRef<THREE.Points>(null!);
+  const positions = useMemo(() => {
+    const pos = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      pos[i * 3]     = (Math.random() - 0.5) * 14;
+      pos[i * 3 + 1] = (Math.random() - 0.5) * 10;
+      pos[i * 3 + 2] = (Math.random() - 0.5) * 10;
+    }
+    return pos;
+  }, [count]);
+  useFrame((state) => {
+    if (mesh.current) {
+      mesh.current.rotation.y = state.clock.elapsedTime * 0.01;
+      mesh.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.007) * 0.08;
+    }
+  });
+  return (
+    <points ref={mesh}>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+      </bufferGeometry>
+      <pointsMaterial size={0.015} color="#666666" transparent opacity={0.25} sizeAttenuation />
+    </points>
+  );
 }
 ```
 
@@ -263,7 +285,9 @@ Keep: GSAP `.solver-3d-wrap` animation, the `SolverScene` component receiving `a
 <hemisphereLight args={['#ffffff', '#444444', 0.5]} />
 ```
 
-### `NetworkGraph` shared component (used by Scenes 1–4)
+### `NetworkGraph` shared component (used by Scenes 1 and 2 only)
+
+Scenes 3, 4, and 5 render their own nodes directly because they need per-mesh ref access or dynamic position updates that `NetworkGraph` cannot expose externally.
 
 ```tsx
 interface NodeDef { position: [number, number, number]; radius: number; color?: string; isHub?: boolean; }
@@ -357,6 +381,8 @@ Wrap each scene in `<Float speed={1} rotationIntensity={0.05} floatIntensity={0.
 
 ### Scene 3: Code — Dependency Tree
 
+**Does NOT use `NetworkGraph`.** Scene 3 needs per-mesh `position.y` mutations in `useFrame` (for the bobbing animation). `NetworkGraph` owns its internal mesh refs and does not expose them, so Scene 3 renders its own nodes directly — same pattern as Scene 5.
+
 **Nodes (11 total):**
 - Root: `[0, 1.5, 0]`, radius 0.10, isHub: true
 - L2 (2): `[-0.9, 0.5, 0]` and `[0.9, 0.5, 0]`, radius 0.07
@@ -364,6 +390,8 @@ Wrap each scene in `<Float speed={1} rotationIntensity={0.05} floatIntensity={0.
 - L4 (4): `[-1.6, -1.5, 0]`, `[-0.6, -1.5, 0]`, `[0.6, -1.5, 0]`, `[1.6, -1.5, 0]`, radius 0.04, color: `#cc5528`
 
 **Edges (via NetworkGraph):** Root→L2[0], Root→L2[1], L2[0]→L3[0], L2[0]→L3[1], L2[1]→L3[2], L2[1]→L3[3], L3[0]→L4[0], L3[1]→L4[1], L3[2]→L4[2], L3[3]→L4[3].
+
+**Opacity prop:** Scene 3 accepts `opacity: number` from `SceneManager` and applies it to all node materials and the edge `LineBasicMaterial`, exactly as `NetworkGraph` does.
 
 **Dashed cross-link (separate from NetworkGraph):** A `THREE.Line` between L3[1] (`[-0.4, -0.5, 0]`) and L3[2] (`[0.4, -0.5, 0]`) using `THREE.LineDashedMaterial({ color: '#ff6b35', dashSize: 0.1, gapSize: 0.08, opacity: 0.3, transparent: true })`. **Required:** call `geometry.computeLineDistances()` on this geometry — without it, dashes render as a solid line.
 
@@ -446,14 +474,14 @@ outerNodeRefs.current.forEach((mesh, i) => {
 
 Total edges: 6 spokes + 6 inner-ring + 6 inner-to-outer = 18 edges → 36 vertices → `Float32Array(108)`.
 
-Pre-allocate once:
+Pre-allocate once. **Critical:** `edgeGeo` holds a `BufferAttribute` that wraps the *same* `Float32Array` reference as `edgePositions`. Mutating `edgePositions` in `useFrame` is what updates the GPU buffer — they are the same object:
 ```tsx
 const edgePositions = useMemo(() => new Float32Array(108), []);
 const edgeGeo = useMemo(() => {
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.BufferAttribute(edgePositions, 3));
   return g;
-}, []);
+}, [edgePositions]); // dep on edgePositions to be explicit about the shared reference
 ```
 
 **Null refs during first frame:** React populates `ref` callbacks synchronously during the initial render commit, so all refs will be assigned before the first `useFrame` call. Do not guard with `continue` — instead, initialize all positions to `[0,0,0]` by default in the pre-allocated buffer, so any stale slots safely draw degenerate (zero-length) line segments that are invisible.
@@ -498,13 +526,20 @@ edgeGeo.attributes.position.needsUpdate = true;
 **Does NOT use `NetworkGraph`.** Custom component with dynamic node positions.
 
 **Core cluster (5 nodes, static base positions, dynamic jitter):**
+
+Define base positions as a constant array so `useFrame` can reference them by index:
+```tsx
+const CORE_BASES: [number, number, number][] = [
+  [0,     0,     0   ], // hub (index 0)
+  [0.25,  0.18,  0.1 ], // c1  (index 1)
+  [-0.20, 0.22, -0.05], // c2  (index 2)
+  [0.15, -0.20,  0.08], // c3  (index 3)
+  [-0.18,-0.15,  0.12], // c4  (index 4)
+];
+const CORE_PHASES = [0, 0.7, 1.4, 2.1, 2.8]; // per-node phase offsets
 ```
-Hub:  [0,     0,     0   ], radius 0.13, isHub: true
-c1:   [0.25,  0.18,  0.1 ], radius 0.08
-c2:   [-0.20, 0.22,  -0.05], radius 0.07
-c3:   [0.15,  -0.20, 0.08], radius 0.08
-c4:   [-0.18, -0.15, 0.12], radius 0.06
-```
+
+In `useFrame`, `basePos` for core node `i` is `CORE_BASES[i]`.
 
 **6 tendril chains:** 2 tendrils start from the hub (at opposite angles), 1 tendril each from c1–c4:
 
@@ -576,7 +611,7 @@ Mutate in `useFrame` from current mesh positions. Set `geometry.attributes.posit
 | `src/app/globals.css` | Add `--bg-primary-rgb` to dark and light mode blocks |
 | `src/components/sections/HeroSection.tsx` | Replace two-column grid with position:relative container; add scene wrapper (absolute) + gradient mask; update loading fallback to transparent bg |
 | `src/components/three/HeroScene.tsx` | Full rewrite: 120 individual node meshes with ref array, LineSegments edges, mouse parallax, slow drift, ambient particles. No hemisphereLight. |
-| `src/components/three/SolverScene.tsx` | Full rewrite: NetworkGraph component + 5 topology components (Scenes 1–4 use NetworkGraph; Scene 5 custom) + updated SceneManager |
+| `src/components/three/SolverScene.tsx` | Full rewrite: NetworkGraph component (used by Scenes 1–2) + 5 topology components (Scenes 1–2 via NetworkGraph; Scenes 3–5 render nodes directly) + updated SceneManager |
 | `src/components/sections/SolverSection.tsx` | Remove tab buttons, sceneSteps, handleStepClick, intervalRef; replace with simplified auto-cycle |
 
 ---
