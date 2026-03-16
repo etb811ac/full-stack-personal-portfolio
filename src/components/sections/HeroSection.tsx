@@ -70,8 +70,7 @@ export default function HeroSection() {
     <section
       ref={sectionRef}
       id="hero"
-      className="relative min-h-screen flex items-center overflow-hidden"
-      style={{ background: 'var(--gradient-hero)', paddingTop: '80px' }}
+      style={{ background: 'var(--gradient-hero)', minHeight: '100vh', paddingTop: '80px' }}
     >
       {/* Bottom gradient fade */}
       <div
@@ -79,125 +78,107 @@ export default function HeroSection() {
         style={{ background: 'linear-gradient(to top, var(--bg-primary), transparent)' }}
       />
 
-      <div
-        className="w-full max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-2 items-center"
-        style={{ padding: '0 var(--space-2xl)', gap: 'var(--space-3xl)' }}
-      >
-        {/* Left: Content */}
-        <div className="z-[2]">
-          {/* Eyebrow */}
-          <div
-            className="hero-animate flex items-center opacity-0"
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: '0.875rem',
-              color: 'var(--text-tertiary)',
-              letterSpacing: '0.15em',
-              textTransform: 'uppercase',
-              marginBottom: 'var(--space-lg)',
-              gap: 'var(--space-md)',
-            }}
-          >
-            <span
-              className="w-2 h-2 rounded-full"
-              style={{ background: '#22c55e', animation: 'pulse-dot 2s ease-in-out infinite' }}
-            />
-            Available for projects
-          </div>
-
-          {/* Title */}
-          <h1
-            className="hero-animate opacity-0"
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: 'clamp(3.5rem, 8vw, 7rem)',
-              fontWeight: 700,
-              lineHeight: 0.95,
-              letterSpacing: '-0.03em',
-              marginBottom: 'var(--space-lg)',
-            }}
-          >
-            <span className="block">Esteban</span>
-            <span className="block">Acuña</span>
-          </h1>
-
-          {/* Tagline */}
-          <div
-            className="hero-animate opacity-0 relative"
-            style={{
-              fontFamily: 'var(--font-body)',
-              fontSize: 'clamp(1.25rem, 2.5vw, 2rem)',
-              fontWeight: 300,
-              fontStyle: 'italic',
-              color: 'var(--text-secondary)',
-              letterSpacing: '0.02em',
-              marginBottom: 'var(--space-xl)',
-              paddingLeft: 'var(--space-xl)',
-            }}
-          >
-            <span
-              className="absolute left-0 rounded-full"
-              style={{
-                top: '15%',
-                height: '70%',
-                width: '2px',
-                background: 'var(--accent)',
-              }}
-            />
-            Full-Stack Developer
-          </div>
-
-          {/* Subtitle */}
-          <p
-            className="hero-animate opacity-0"
-            style={{
-              fontFamily: 'var(--font-body)',
-              fontSize: '1.125rem',
-              color: 'var(--text-secondary)',
-              maxWidth: '480px',
-              lineHeight: 1.7,
-              marginBottom: 'var(--space-2xl)',
-            }}
-          >
-            I build digital experiences where code meets craft. From pixel-perfect interfaces to robust backends —
-            and everything in between, including the furniture I sit on while coding.
-          </p>
-
-          {/* CTAs */}
-          <div className="hero-animate opacity-0 flex flex-wrap gap-4 items-center">
-            <a
-              href="#contact"
-              className="inline-block text-sm font-semibold uppercase tracking-widest rounded-full transition-all duration-400 hover:scale-[1.02]"
-              style={{
-                fontFamily: 'var(--font-display)',
-                padding: 'var(--space-md) var(--space-xl)',
-                background: 'var(--text-primary)',
-                color: 'var(--text-inverse)',
-                letterSpacing: '0.08em',
-              }}
-            >
-              Get in Touch
-            </a>
-            <a
-              href="#expertise"
-              className="inline-block text-sm font-medium uppercase tracking-widest rounded-full transition-all duration-400 hover:scale-[1.02]"
-              style={{
-                fontFamily: 'var(--font-display)',
-                padding: 'var(--space-md) var(--space-xl)',
-                background: 'transparent',
-                color: 'var(--text-primary)',
-                border: '1px solid var(--border)',
-                letterSpacing: '0.08em',
-              }}
-            >
-              View Expertise
-            </a>
-          </div>
+      <div className="section-wrapper">
+        {/* Ghost number column */}
+        <div className="section-num-col">
+          <span className="section-num">01</span>
         </div>
 
-        {/* Right: 3D Scene */}
-        <div className="hero-3d-container w-full h-[500px] lg:h-[500px] opacity-0 relative">
-          <HeroScene />
+        <div className="section-divider-line" />
+
+        {/* Main hero content */}
+        <div className="section-content-col" style={{ padding: 0 }}>
+          <div
+            className="w-full max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-2 items-center"
+            style={{ padding: '0 var(--space-2xl)', gap: 'var(--space-3xl)' }}
+          >
+            {/* Left: Content */}
+            <div className="z-[2]">
+              {/* Status badge */}
+              <div className="hero-animate opacity-0" style={{ marginBottom: 'var(--space-lg)' }}>
+                <div style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: 'var(--accent-glow)',
+                  border: '1px solid var(--border-accent)',
+                  borderRadius: '0',
+                  padding: '6px 14px',
+                }}>
+                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent)', display: 'inline-block' }} />
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--accent)' }}>
+                    Available for projects
+                  </span>
+                </div>
+              </div>
+
+              {/* Name treatment */}
+              <h1
+                className="hero-animate opacity-0"
+                style={{ lineHeight: '0.9', marginBottom: 'var(--space-lg)' }}
+              >
+                <span style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 'clamp(3.5rem, 8vw, 7rem)',
+                  letterSpacing: '0.02em',
+                  color: 'var(--text-primary)',
+                  display: 'block',
+                }}>
+                  ESTEBAN
+                </span>
+                <em style={{
+                  fontFamily: 'var(--font-accent)',
+                  fontStyle: 'italic',
+                  fontSize: 'clamp(3rem, 7vw, 6.2rem)',
+                  color: 'var(--accent)',
+                  display: 'block',
+                }}>
+                  Acuña
+                </em>
+              </h1>
+
+              {/* Tagline */}
+              <p
+                className="hero-animate opacity-0"
+                style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '0.875rem',
+                  letterSpacing: '2px',
+                  color: 'var(--text-tertiary)',
+                  marginBottom: 'var(--space-xl)',
+                }}
+              >
+                // Full-Stack Developer
+              </p>
+
+              {/* Subtitle */}
+              <p
+                className="hero-animate opacity-0"
+                style={{
+                  fontFamily: 'var(--font-body)',
+                  fontSize: '1.125rem',
+                  color: 'var(--text-secondary)',
+                  maxWidth: '480px',
+                  lineHeight: 1.7,
+                  marginBottom: 'var(--space-2xl)',
+                }}
+              >
+                I build digital experiences where code meets craft. From pixel-perfect interfaces to robust backends —
+                and everything in between, including the furniture I sit on while coding.
+              </p>
+
+              {/* CTA Buttons */}
+              <div className="hero-animate opacity-0" style={{ display: 'flex', gap: 'var(--space-md)', flexWrap: 'wrap', marginTop: 'var(--space-2xl)' }}>
+                <a href="#contact" className="btn-primary">Get in Touch</a>
+                <a href="#expertise" className="btn-ghost">View Expertise</a>
+              </div>
+            </div>
+
+            {/* Right: 3D Scene */}
+            <div className="hero-3d-container w-full h-[500px] lg:h-[500px] opacity-0 relative">
+              <HeroScene />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -225,10 +206,6 @@ export default function HeroSection() {
       </div>
 
       <style jsx>{`
-        @keyframes pulse-dot {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.4; }
-        }
         @keyframes float {
           0%, 100% { transform: translateX(-50%) translateY(0); }
           50% { transform: translateX(-50%) translateY(-10px); }
