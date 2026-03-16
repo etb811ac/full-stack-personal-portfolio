@@ -70,150 +70,117 @@ export default function ReviewsSection() {
     <section
       ref={sectionRef}
       id="reviews"
-      className="relative"
-      style={{ padding: 'var(--space-6xl) var(--space-2xl)', background: 'var(--bg-secondary)' }}
+      style={{ background: 'var(--bg-primary)' }}
     >
-      <div className="max-w-[1400px] mx-auto">
-        <span
-          className="absolute hidden lg:block select-none"
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: '7rem',
-            fontWeight: 700,
-            color: 'var(--border)',
-            right: 'var(--space-2xl)',
-            top: 'var(--space-4xl)',
-            lineHeight: 1,
-          }}
-        >
-          04
-        </span>
-
-        <div
-          className="review-reveal opacity-0 flex items-center"
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: '0.75rem',
-            textTransform: 'uppercase',
-            letterSpacing: '0.15em',
-            color: 'var(--text-tertiary)',
-            marginBottom: 'var(--space-lg)',
-            gap: 'var(--space-md)',
-          }}
-        >
-          <span className="w-6 h-px" style={{ background: 'var(--text-tertiary)' }} />
-          Testimonials
+      <div className="section-wrapper">
+        <div className="section-num-col">
+          <span className="section-num">04</span>
         </div>
+        <div className="section-divider-line" />
+        <div className="section-content-col">
+          <span className="section-overline review-reveal opacity-0">04 — Reviews</span>
 
-        <div className="text-center max-w-[600px] mx-auto" style={{ marginBottom: 'var(--space-4xl)' }}>
-          <h2
-            className="review-reveal opacity-0"
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: 'clamp(2rem, 4vw, 3.5rem)',
-              fontWeight: 700,
-              letterSpacing: '-0.02em',
-              marginBottom: 'var(--space-md)',
-            }}
-          >
-            What people <em>say</em>
-          </h2>
-          <p className="review-reveal opacity-0" style={{ color: 'var(--text-secondary)' }}>
-            Words from collaborators, clients, and people I&apos;ve worked with.
-          </p>
-        </div>
-
-        <div className="reviews-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3" style={{ gap: 'var(--space-lg)' }}>
-          {reviews.map((review, i) => (
-            <div
-              key={i}
-              className="review-card relative transition-all duration-400 hover:-translate-y-1"
-              style={{
-                padding: 'var(--space-2xl)',
-                borderRadius: '16px',
-                border: '1px solid var(--border)',
-                background: 'var(--gradient-card)',
-                transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.boxShadow = 'var(--shadow-md)';
-                e.currentTarget.style.borderColor = 'var(--border-accent)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow = '';
-                e.currentTarget.style.borderColor = 'var(--border)';
-              }}
+          <div className="text-center max-w-[600px] mx-auto" style={{ marginBottom: 'var(--space-4xl)' }}>
+            <h2
+              className="review-reveal opacity-0 editorial-heading"
+              style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', marginBottom: 'var(--space-md)' }}
             >
-              {/* Stars */}
+              <span className="display-word">WHAT PEOPLE</span>
+              <em className="accent-word" style={{ fontSize: '0.85em' }}>say</em>
+            </h2>
+            <p className="review-reveal opacity-0" style={{ color: 'var(--text-secondary)' }}>
+              Words from collaborators, clients, and people I&apos;ve worked with.
+            </p>
+          </div>
+
+          <div className="reviews-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3" style={{ gap: 'var(--space-lg)' }}>
+            {reviews.map((review, i) => (
               <div
-                className="absolute"
+                key={i}
+                className="review-card card-editorial relative transition-all duration-400 hover:-translate-y-1"
                 style={{
-                  top: 'var(--space-2xl)',
-                  right: 'var(--space-2xl)',
-                  color: '#f59e0b',
-                  fontSize: '0.875rem',
-                  letterSpacing: '2px',
+                  padding: 'var(--space-xl)',
+                  transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow = 'var(--shadow-md)';
+                  e.currentTarget.style.borderColor = 'var(--border-accent)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = '';
+                  e.currentTarget.style.borderColor = 'var(--border)';
                 }}
               >
-                ★★★★★
-              </div>
-
-              {/* Quote mark */}
-              <div
-                style={{
-                  fontSize: '2.5rem',
-                  color: 'var(--text-tertiary)',
-                  fontFamily: 'Georgia, serif',
-                  lineHeight: 1,
-                  marginBottom: 'var(--space-md)',
-                  opacity: 0.3,
-                }}
-              >
-                &ldquo;
-              </div>
-
-              {/* Text */}
-              <p
-                style={{
-                  fontSize: '1rem',
-                  color: 'var(--text-secondary)',
-                  lineHeight: 1.8,
-                  marginBottom: 'var(--space-xl)',
-                  fontStyle: 'italic',
-                }}
-              >
-                {review.text}
-              </p>
-
-              {/* Author */}
-              <div className="flex items-center" style={{ gap: 'var(--space-md)' }}>
+                {/* Stars */}
                 <div
-                  className="flex items-center justify-center shrink-0"
+                  className="absolute"
                   style={{
-                    width: '44px',
-                    height: '44px',
-                    borderRadius: '50%',
-                    background: 'var(--bg-hover)',
-                    border: '1px solid var(--border)',
-                    fontFamily: 'var(--font-display)',
-                    fontWeight: 600,
+                    top: 'var(--space-2xl)',
+                    right: 'var(--space-2xl)',
+                    color: '#f59e0b',
                     fontSize: '0.875rem',
-                    color: 'var(--text-tertiary)',
+                    letterSpacing: '2px',
                   }}
                 >
-                  {review.initials}
+                  ★★★★★
                 </div>
-                <div>
-                  <div className="font-semibold text-sm" style={{ fontFamily: 'var(--font-display)' }}>
-                    {review.name}
+
+                {/* Quote mark */}
+                <span
+                  style={{
+                    fontFamily: 'var(--font-accent)',
+                    fontStyle: 'italic',
+                    fontSize: '4rem',
+                    lineHeight: '1',
+                    color: 'var(--accent)',
+                    display: 'block',
+                    marginBottom: 'var(--space-sm)',
+                  }}
+                >&ldquo;</span>
+
+                {/* Text */}
+                <p
+                  style={{
+                    fontSize: '1rem',
+                    color: 'var(--text-secondary)',
+                    lineHeight: 1.8,
+                    marginBottom: 'var(--space-xl)',
+                    fontStyle: 'italic',
+                  }}
+                >
+                  {review.text}
+                </p>
+
+                {/* Author */}
+                <div className="flex items-center" style={{ gap: 'var(--space-md)' }}>
+                  <div
+                    className="flex items-center justify-center shrink-0"
+                    style={{
+                      width: '44px',
+                      height: '44px',
+                      borderRadius: '50%',
+                      background: 'var(--bg-hover)',
+                      border: '1px solid var(--border)',
+                      fontFamily: 'var(--font-display)',
+                      fontWeight: 600,
+                      fontSize: '0.875rem',
+                      color: 'var(--text-tertiary)',
+                    }}
+                  >
+                    {review.initials}
                   </div>
-                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>
-                    {review.role}
+                  <div>
+                    <div className="font-semibold text-sm" style={{ fontFamily: 'var(--font-display)' }}>
+                      {review.name}
+                    </div>
+                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>
+                      {review.role}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </section>
