@@ -93,7 +93,7 @@ export default function HeroSection() {
             style={{ padding: '0 var(--space-2xl)', gap: 'var(--space-3xl)', position: 'relative', overflow: 'hidden' }}
           >
             {/* Left: Content */}
-            <div className="z-[2]">
+            <div className="z-[2] relative">
               {/* Status badge */}
               <div className="hero-animate opacity-0" style={{ marginBottom: 'var(--space-lg)' }}>
                 <div style={{
@@ -196,7 +196,7 @@ export default function HeroSection() {
                 position: 'absolute',
                 left: 0,
                 top: 0,
-                height: '100%',
+                height: 'calc(100vh - 80px)',
                 width: '60%',
                 background: 'linear-gradient(90deg, rgba(var(--bg-primary-rgb), 1) 0%, rgba(var(--bg-primary-rgb), 1) 35%, rgba(var(--bg-primary-rgb), 0.75) 60%, transparent 100%)',
                 zIndex: 1,
