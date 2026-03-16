@@ -45,6 +45,9 @@ function Particles({ count = 200 }: { count?: number }) {
 function HeroNetwork() {
   const groupRef = useRef<THREE.Group>(null!);
   const nodeRefs = useRef<(THREE.Mesh | null)[]>([]);
+  const driftAngle = useRef(0);
+  const parallaxY = useRef(0);
+  const parallaxX = useRef(0);
 
   const nodes = useMemo<HeroNode[]>(() => {
     const result: HeroNode[] = [];
@@ -137,9 +140,11 @@ function HeroNetwork() {
       const mat = mesh.material as THREE.MeshStandardMaterial;
       mat.opacity = node.baseOpacity + Math.sin(t * node.speed + node.phase) * 0.25;
     });
-    groupRef.current.rotation.y += (state.pointer.x * 0.3 - groupRef.current.rotation.y) * 0.02;
-    groupRef.current.rotation.x += (-state.pointer.y * 0.2 - groupRef.current.rotation.x) * 0.02;
-    groupRef.current.rotation.y += 0.0003;
+    driftAngle.current = (driftAngle.current + 0.0003) % (Math.PI * 2);
+    parallaxY.current += (state.pointer.x * 0.3 - parallaxY.current) * 0.02;
+    parallaxX.current += (-state.pointer.y * 0.2 - parallaxX.current) * 0.02;
+    groupRef.current.rotation.y = driftAngle.current + parallaxY.current;
+    groupRef.current.rotation.x = parallaxX.current;
   });
 
   return (
