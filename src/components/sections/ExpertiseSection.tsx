@@ -43,18 +43,16 @@ function TechNodeCard({ node, index }: { node: TechNode; index: number }) {
       className={`tech-node-card relative flex items-center overflow-hidden cursor-default transition-all duration-400`}
       style={{
         padding: 'var(--space-lg) var(--space-xl)',
-        borderRadius: '16px',
         border: '1px solid var(--border)',
-        background: 'var(--gradient-card)',
+        background: 'var(--bg-secondary)',
         minWidth: '180px',
         gap: 'var(--space-md)',
         transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
       }}
       onMouseEnter={(e) => {
         const el = e.currentTarget;
-        el.style.transform = 'translateY(-6px) scale(1.02)';
-        el.style.borderColor = 'var(--border-accent)';
-        el.style.boxShadow = 'var(--shadow-glow), var(--shadow-md)';
+        el.style.boxShadow = 'inset 3px 0 0 var(--accent)';
+        el.style.background = 'var(--accent-glow)';
         const detail = el.querySelector('.tech-detail') as HTMLElement;
         if (detail) detail.style.transform = 'translateY(0)';
         const icon = el.querySelector('.tech-icon') as HTMLElement;
@@ -62,21 +60,14 @@ function TechNodeCard({ node, index }: { node: TechNode; index: number }) {
       }}
       onMouseLeave={(e) => {
         const el = e.currentTarget;
-        el.style.transform = '';
-        el.style.borderColor = 'var(--border)';
-        el.style.boxShadow = '';
+        el.style.boxShadow = 'none';
+        el.style.background = 'var(--bg-secondary)';
         const detail = el.querySelector('.tech-detail') as HTMLElement;
         if (detail) detail.style.transform = 'translateY(100%)';
         const icon = el.querySelector('.tech-icon') as HTMLElement;
         if (icon) icon.style.transform = '';
       }}
     >
-      {/* Glow overlay */}
-      <div
-        className="absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-400"
-        style={{ background: 'radial-gradient(circle at 30% 50%, var(--accent-glow), transparent 70%)' }}
-      />
-
       {/* Icon */}
       <div
         className="tech-icon flex items-center justify-center shrink-0 z-[1] transition-transform duration-400"
@@ -173,85 +164,56 @@ export default function ExpertiseSection() {
     <section
       ref={sectionRef}
       id="expertise"
-      className="relative"
-      style={{ padding: 'var(--space-6xl) var(--space-2xl)' }}
+      style={{ background: 'var(--bg-secondary)' }}
     >
-      <div className="max-w-[1400px] mx-auto">
-        <span
-          className="absolute hidden lg:block select-none"
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: '7rem',
-            fontWeight: 700,
-            color: 'var(--border)',
-            right: 'var(--space-2xl)',
-            top: 'var(--space-4xl)',
-            lineHeight: 1,
-          }}
-        >
-          03
-        </span>
-
-        <div
-          className="expertise-reveal opacity-0 flex items-center"
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: '0.75rem',
-            textTransform: 'uppercase',
-            letterSpacing: '0.15em',
-            color: 'var(--text-tertiary)',
-            marginBottom: 'var(--space-lg)',
-            gap: 'var(--space-md)',
-          }}
-        >
-          <span className="w-6 h-px" style={{ background: 'var(--text-tertiary)' }} />
-          Expertise
+      <div className="section-wrapper">
+        <div className="section-num-col">
+          <span className="section-num">03</span>
         </div>
+        <div className="section-divider-line" />
+        <div className="section-content-col">
+          <span className="section-overline expertise-reveal opacity-0">03 — Expertise</span>
 
-        <div className="text-center max-w-[700px] mx-auto" style={{ marginBottom: 'var(--space-4xl)' }}>
-          <h2
-            className="expertise-reveal opacity-0"
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: 'clamp(2rem, 4vw, 3.5rem)',
-              fontWeight: 700,
-              letterSpacing: '-0.02em',
-              marginBottom: 'var(--space-md)',
-            }}
-          >
-            Tools of the <em>trade</em>
-          </h2>
-          <p className="expertise-reveal opacity-0" style={{ color: 'var(--text-secondary)', fontSize: '1.125rem' }}>
-            Technologies I use to bring ideas to life — from interactive frontends to intelligent backends.
-          </p>
-        </div>
+          <div className="text-center max-w-[700px] mx-auto" style={{ marginBottom: 'var(--space-4xl)' }}>
+            <h2
+              className="expertise-reveal opacity-0 editorial-heading"
+              style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', marginBottom: 'var(--space-md)' }}
+            >
+              <span className="display-word">TOOLS</span>
+              <em className="accent-word" style={{ fontSize: '0.85em' }}>of the trade</em>
+            </h2>
+            <p className="expertise-reveal opacity-0" style={{ color: 'var(--text-secondary)', fontSize: '1.125rem' }}>
+              Technologies I use to bring ideas to life — from interactive frontends to intelligent backends.
+            </p>
+          </div>
 
-        <div className="tech-constellation flex flex-col" style={{ gap: 'var(--space-3xl)' }}>
-          {categories.map((cat) => (
-            <div key={cat.label} className="flex flex-col" style={{ gap: 'var(--space-lg)' }}>
-              <div
-                className="flex items-center"
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '0.75rem',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.15em',
-                  color: 'var(--text-tertiary)',
-                  paddingBottom: 'var(--space-sm)',
-                  borderBottom: '1px solid var(--border)',
-                  gap: 'var(--space-md)',
-                }}
-              >
-                <span className="w-2 h-2 rounded-full shrink-0" style={{ background: 'var(--text-tertiary)' }} />
-                {cat.label}
+          <div className="tech-constellation flex flex-col" style={{ gap: 'var(--space-3xl)' }}>
+            {categories.map((cat) => (
+              <div key={cat.label} className="flex flex-col" style={{ gap: 'var(--space-lg)' }}>
+                <div
+                  className="flex items-center"
+                  style={{
+                    fontFamily: 'var(--font-display)',
+                    fontSize: '1.25rem',
+                    letterSpacing: '0.05em',
+                    color: 'var(--text-secondary)',
+                    marginBottom: 'var(--space-md)',
+                    paddingBottom: 'var(--space-sm)',
+                    borderBottom: '1px solid var(--border)',
+                    gap: 'var(--space-md)',
+                  }}
+                >
+                  <span className="w-2 h-2 rounded-full shrink-0" style={{ background: 'var(--text-tertiary)' }} />
+                  {cat.label}
+                </div>
+                <div className="flex flex-wrap" style={{ gap: 'var(--space-md)' }}>
+                  {cat.nodes.map((node, i) => (
+                    <TechNodeCard key={node.name} node={node} index={i} />
+                  ))}
+                </div>
               </div>
-              <div className="flex flex-wrap" style={{ gap: 'var(--space-md)' }}>
-                {cat.nodes.map((node, i) => (
-                  <TechNodeCard key={node.name} node={node} index={i} />
-                ))}
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </section>
