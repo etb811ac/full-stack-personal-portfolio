@@ -5,270 +5,547 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { Float } from '@react-three/drei';
 import * as THREE from 'three';
 
-// Abstract 3D representations for each "problem solver" scene
-// 1. Auto/Wrench - Gear-like shape
-// 2. Electronics - Circuit board / grid
-// 3. Code - Matrix of floating cubes
-// 4. PCB - Circular board with traces
-// 5. Solder - Glowing point with tendrils
+// ─── Shared types ─────────────────────────────────────────────────────────────
 
-function GearShape({ opacity = 1 }: { opacity: number }) {
-  const ref = useRef<THREE.Group>(null!);
-  const teeth = 12;
-  const toothPositions = useMemo(() => {
-    return Array.from({ length: teeth }, (_, i) => {
-      const angle = (i / teeth) * Math.PI * 2;
-      return { x: Math.cos(angle) * 1.2, y: Math.sin(angle) * 1.2, angle };
+interface NodeDef {
+  position: [number, number, number];
+  radius: number;
+  color?: string;
+  isHub?: boolean;
+}
+interface EdgeDef { from: number; to: number; }
+
+// ─── NetworkGraph (used by GearScene only) ────────────────────────────────────
+
+function NetworkGraph({
+  nodes, edges, opacity,
+}: { nodes: NodeDef[]; edges: EdgeDef[]; opacity: number }) {
+  const edgeGeometry = useMemo(() => {
+    const positions = new Float32Array(edges.length * 6);
+    edges.forEach(({ from, to }, i) => {
+      const a = nodes[from].position;
+      const b = nodes[to].position;
+      const v = i * 6;
+      positions[v]     = a[0]; positions[v + 1] = a[1]; positions[v + 2] = a[2];
+      positions[v + 3] = b[0]; positions[v + 4] = b[1]; positions[v + 5] = b[2];
     });
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    return geo;
+  }, [nodes, edges]);
+
+  return (
+    <>
+      {nodes.map((node, i) => (
+        <group key={i}>
+          <mesh position={node.position}>
+            <sphereGeometry args={[node.radius, 12, 12]} />
+            <meshStandardMaterial
+              color={node.color ?? '#ff6b35'}
+              transparent
+              opacity={opacity}
+            />
+          </mesh>
+          {node.isHub && (
+            <mesh position={node.position}>
+              <ringGeometry args={[node.radius * 2.5, node.radius * 3.5, 32]} />
+              <meshBasicMaterial
+                color="#ff6b35"
+                transparent
+                opacity={opacity * 0.12}
+                side={THREE.DoubleSide}
+              />
+            </mesh>
+          )}
+        </group>
+      ))}
+      <lineSegments geometry={edgeGeometry}>
+        <lineBasicMaterial color="#ff6b35" transparent opacity={opacity * 0.35} />
+      </lineSegments>
+    </>
+  );
+}
+
+// ─── Scene 1: Gear-Ring ───────────────────────────────────────────────────────
+
+function GearScene({ opacity }: { opacity: number }) {
+  const groupRef = useRef<THREE.Group>(null!);
+
+  const nodes = useMemo<NodeDef[]>(() => {
+    const result: NodeDef[] = [{ position: [0, 0, 0], radius: 0.12, isHub: true }];
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2;
+      result.push({ position: [Math.cos(a) * 1.2, Math.sin(a) * 1.2, 0], radius: 0.07 });
+    }
+    return result;
   }, []);
 
-  useFrame((state) => {
-    if (ref.current) {
-      ref.current.rotation.z = state.clock.elapsedTime * 0.3;
-    }
+  const edges = useMemo<EdgeDef[]>(() => {
+    const result: EdgeDef[] = [];
+    for (let i = 1; i <= 8; i++) result.push({ from: i, to: 0 });         // spokes
+    for (let i = 1; i <= 8; i++) result.push({ from: i, to: (i % 8) + 1 }); // ring
+    return result;
+  }, []);
+
+  useFrame(() => {
+    if (groupRef.current) groupRef.current.rotation.z += 0.003;
   });
 
   return (
-    <group ref={ref}>
-      <mesh>
-        <torusGeometry args={[1, 0.15, 16, teeth * 2]} />
-        <meshStandardMaterial color="#888" metalness={0.9} roughness={0.3} transparent opacity={opacity} />
-      </mesh>
-      {toothPositions.map((pos, i) => (
-        <mesh key={i} position={[pos.x, pos.y, 0]} rotation={[0, 0, pos.angle]}>
-          <boxGeometry args={[0.15, 0.35, 0.15]} />
-          <meshStandardMaterial color="#aaa" metalness={0.9} roughness={0.2} transparent opacity={opacity} />
-        </mesh>
-      ))}
-      <mesh>
-        <cylinderGeometry args={[0.3, 0.3, 0.2, 6]} />
-        <meshStandardMaterial color="#666" metalness={0.8} roughness={0.3} transparent opacity={opacity} />
-      </mesh>
+    <group ref={groupRef}>
+      <NetworkGraph nodes={nodes} edges={edges} opacity={opacity} />
     </group>
   );
 }
 
-function CircuitGrid({ opacity = 1 }: { opacity: number }) {
-  const ref = useRef<THREE.Group>(null!);
-  const nodes = useMemo(() => {
-    const n: { x: number; y: number; z: number; size: number }[] = [];
-    for (let x = -2; x <= 2; x++) {
-      for (let y = -2; y <= 2; y++) {
-        if (Math.random() > 0.3) {
-          n.push({ x: x * 0.5, y: y * 0.5, z: (Math.random() - 0.5) * 0.2, size: 0.04 + Math.random() * 0.06 });
-        }
+// ─── Scene 2: Electronics Grid ────────────────────────────────────────────────
+
+function ElectronicsScene({ opacity }: { opacity: number }) {
+  const groupRef = useRef<THREE.Group>(null!);
+  const edgeMatRef = useRef<THREE.LineBasicMaterial>(null!);
+
+  const nodes = useMemo<NodeDef[]>(() => {
+    const result: NodeDef[] = [];
+    for (let row = 0; row < 3; row++) {
+      for (let col = 0; col < 3; col++) {
+        result.push({
+          position: [(col - 1) * 0.8, (row - 1) * 0.8, 0],
+          radius: row === 1 && col === 1 ? 0.10 : 0.06,
+          isHub: row === 1 && col === 1,
+        });
       }
     }
-    return n;
+    return result;
   }, []);
 
+  const edges = useMemo<EdgeDef[]>(() => {
+    const result: EdgeDef[] = [];
+    for (let row = 0; row < 3; row++) {
+      for (let col = 0; col < 3; col++) {
+        if (col < 2) result.push({ from: row * 3 + col, to: row * 3 + col + 1 });
+        if (row < 2) result.push({ from: row * 3 + col, to: (row + 1) * 3 + col });
+      }
+    }
+    return result;
+  }, []);
+
+  const edgeGeometry = useMemo(() => {
+    const positions = new Float32Array(edges.length * 6);
+    edges.forEach(({ from, to }, i) => {
+      const a = nodes[from].position;
+      const b = nodes[to].position;
+      const v = i * 6;
+      positions[v]     = a[0]; positions[v + 1] = a[1]; positions[v + 2] = a[2];
+      positions[v + 3] = b[0]; positions[v + 4] = b[1]; positions[v + 5] = b[2];
+    });
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    return geo;
+  }, [nodes, edges]);
+
   useFrame((state) => {
-    if (ref.current) {
-      ref.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.2) * 0.2;
-      ref.current.rotation.x = Math.cos(state.clock.elapsedTime * 0.15) * 0.1;
+    const t = state.clock.elapsedTime;
+    if (groupRef.current) groupRef.current.rotation.y = Math.sin(t * 0.2) * 0.2;
+    if (edgeMatRef.current) {
+      edgeMatRef.current.opacity = (0.35 + Math.sin(t * 1.2) * 0.1) * opacity;
     }
   });
 
   return (
-    <group ref={ref}>
-      {/* Grid lines */}
-      {[-2, -1, 0, 1, 2].map((val) => (
-        <group key={`grid-${val}`}>
-          <mesh position={[0, val * 0.5, 0]}>
-            <boxGeometry args={[2.5, 0.005, 0.005]} />
-            <meshBasicMaterial color="#ff6b35" transparent opacity={opacity * 0.3} />
+    <group ref={groupRef}>
+      {nodes.map((node, i) => (
+        <group key={i}>
+          <mesh position={node.position}>
+            <sphereGeometry args={[node.radius, 12, 12]} />
+            <meshStandardMaterial color="#ff6b35" transparent opacity={opacity} />
           </mesh>
-          <mesh position={[val * 0.5, 0, 0]}>
-            <boxGeometry args={[0.005, 2.5, 0.005]} />
-            <meshBasicMaterial color="#ff6b35" transparent opacity={opacity * 0.3} />
+          {node.isHub && (
+            <mesh position={node.position}>
+              <ringGeometry args={[node.radius * 2.5, node.radius * 3.5, 32]} />
+              <meshBasicMaterial
+                color="#ff6b35" transparent opacity={opacity * 0.12} side={THREE.DoubleSide}
+              />
+            </mesh>
+          )}
+        </group>
+      ))}
+      <lineSegments geometry={edgeGeometry}>
+        <lineBasicMaterial ref={edgeMatRef} color="#ff6b35" transparent opacity={opacity * 0.35} />
+      </lineSegments>
+    </group>
+  );
+}
+
+// ─── Scene 3: Code Dependency Tree ───────────────────────────────────────────
+
+interface CodeNode extends NodeDef { level: number; baseY: number; phase: number; }
+
+const CODE_NODES: CodeNode[] = [
+  { position: [0,     1.5,  0], radius: 0.10, isHub: true,        level: 0, baseY:  1.5, phase: 0.0 },
+  { position: [-0.9,  0.5,  0], radius: 0.07,                     level: 1, baseY:  0.5, phase: 0.5 },
+  { position: [ 0.9,  0.5,  0], radius: 0.07,                     level: 1, baseY:  0.5, phase: 1.0 },
+  { position: [-1.4, -0.5,  0], radius: 0.055,                    level: 2, baseY: -0.5, phase: 0.3 },
+  { position: [-0.4, -0.5,  0], radius: 0.055,                    level: 2, baseY: -0.5, phase: 0.8 },
+  { position: [ 0.4, -0.5,  0], radius: 0.055,                    level: 2, baseY: -0.5, phase: 1.3 },
+  { position: [ 1.4, -0.5,  0], radius: 0.055,                    level: 2, baseY: -0.5, phase: 1.8 },
+  { position: [-1.6, -1.5,  0], radius: 0.04, color: '#cc5528',   level: 3, baseY: -1.5, phase: 0.2 },
+  { position: [-0.6, -1.5,  0], radius: 0.04, color: '#cc5528',   level: 3, baseY: -1.5, phase: 0.7 },
+  { position: [ 0.6, -1.5,  0], radius: 0.04, color: '#cc5528',   level: 3, baseY: -1.5, phase: 1.2 },
+  { position: [ 1.6, -1.5,  0], radius: 0.04, color: '#cc5528',   level: 3, baseY: -1.5, phase: 1.7 },
+];
+
+const CODE_EDGES: EdgeDef[] = [
+  { from: 0, to: 1 }, { from: 0, to: 2 },
+  { from: 1, to: 3 }, { from: 1, to: 4 },
+  { from: 2, to: 5 }, { from: 2, to: 6 },
+  { from: 3, to: 7 }, { from: 4, to: 8 }, { from: 5, to: 9 }, { from: 6, to: 10 },
+];
+
+function CodeScene({ opacity }: { opacity: number }) {
+  const nodeRefs = useRef<(THREE.Mesh | null)[]>([]);
+  const dashMatRef = useRef(
+    new THREE.LineDashedMaterial({
+      color: '#ff6b35', dashSize: 0.1, gapSize: 0.08, transparent: true, opacity: 0.3,
+    })
+  );
+
+  const edgeGeometry = useMemo(() => {
+    const positions = new Float32Array(CODE_EDGES.length * 6);
+    CODE_EDGES.forEach(({ from, to }, i) => {
+      const a = CODE_NODES[from].position;
+      const b = CODE_NODES[to].position;
+      const v = i * 6;
+      positions[v]     = a[0]; positions[v + 1] = a[1]; positions[v + 2] = a[2];
+      positions[v + 3] = b[0]; positions[v + 4] = b[1]; positions[v + 5] = b[2];
+    });
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    return geo;
+  }, []);
+
+  // Dashed cross-link between L2[1] (index 4) and L2[2] (index 5)
+  const dashGeometry = useMemo(() => {
+    const positions = new Float32Array([-0.4, -0.5, 0, 0.4, -0.5, 0]);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    return geo;
+  }, []);
+
+  const dashLine = useMemo(() => {
+    const line = new THREE.Line(dashGeometry, dashMatRef.current);
+    line.computeLineDistances(); // required — without this, LineDashedMaterial renders solid
+    return line;
+  }, [dashGeometry]);
+
+  useFrame((state) => {
+    const t = state.clock.elapsedTime;
+    dashMatRef.current.opacity = opacity * 0.3;
+    nodeRefs.current.forEach((mesh, i) => {
+      if (!mesh) return;
+      const n = CODE_NODES[i];
+      mesh.position.y = n.baseY + Math.sin(t * 0.8 + n.level * 1.2 + n.phase) * 0.05;
+    });
+  });
+
+  return (
+    <>
+      {CODE_NODES.map((node, i) => (
+        <group key={i}>
+          <mesh
+            ref={(el) => { nodeRefs.current[i] = el; }}
+            position={[node.position[0], node.position[1], node.position[2]]}
+          >
+            <sphereGeometry args={[node.radius, 12, 12]} />
+            <meshStandardMaterial
+              color={node.color ?? '#ff6b35'} transparent opacity={opacity}
+            />
+          </mesh>
+          {node.isHub && (
+            <mesh position={node.position}>
+              <ringGeometry args={[node.radius * 2.5, node.radius * 3.5, 32]} />
+              <meshBasicMaterial
+                color="#ff6b35" transparent opacity={opacity * 0.12} side={THREE.DoubleSide}
+              />
+            </mesh>
+          )}
+        </group>
+      ))}
+      <lineSegments geometry={edgeGeometry}>
+        <lineBasicMaterial color="#ff6b35" transparent opacity={opacity * 0.4} />
+      </lineSegments>
+      <primitive object={dashLine} />
+    </>
+  );
+}
+
+// ─── Scene 4: PCB Radial ──────────────────────────────────────────────────────
+
+function PCBScene({ opacity }: { opacity: number }) {
+  const innerNodeRefs = useRef<(THREE.Mesh | null)[]>([]);
+  const outerNodeRefs = useRef<(THREE.Mesh | null)[]>([]);
+  const innerAngle = useRef(0);
+  const outerAngle = useRef(0);
+
+  // Pre-allocated edge buffer: 18 edges × 2 verts × 3 floats = 108 floats
+  const edgePositions = useMemo(() => new Float32Array(108), []);
+  const edgeGeo = useMemo(() => {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(edgePositions, 3));
+    return g;
+  }, [edgePositions]);
+
+  const innerBaseAngles = useMemo(
+    () => Array.from({ length: 6 }, (_, i) => (i / 6) * Math.PI * 2),
+    []
+  );
+  const outerBaseAngles = useMemo(
+    () => Array.from({ length: 8 }, (_, i) => (i / 8) * Math.PI * 2),
+    []
+  );
+
+  useFrame(() => {
+    innerAngle.current += 0.0008;
+    outerAngle.current -= 0.0005;
+
+    innerNodeRefs.current.forEach((mesh, i) => {
+      if (!mesh) return;
+      const a = innerBaseAngles[i] + innerAngle.current;
+      mesh.position.x = Math.cos(a) * 0.9;
+      mesh.position.y = Math.sin(a) * 0.9;
+    });
+    outerNodeRefs.current.forEach((mesh, i) => {
+      if (!mesh) return;
+      const a = outerBaseAngles[i] + outerAngle.current;
+      mesh.position.x = Math.cos(a) * 1.65;
+      mesh.position.y = Math.sin(a) * 1.65;
+    });
+
+    // Rebuild edge buffer — advance v by 6 on null refs to keep alignment
+    let v = 0;
+    for (let i = 0; i < 6; i++) {
+      const inner = innerNodeRefs.current[i];
+      if (!inner) { v += 6; continue; }
+      edgePositions[v++] = 0;               edgePositions[v++] = 0;               edgePositions[v++] = 0;
+      edgePositions[v++] = inner.position.x; edgePositions[v++] = inner.position.y; edgePositions[v++] = 0;
+    }
+    for (let i = 0; i < 6; i++) {
+      const a = innerNodeRefs.current[i];
+      const b = innerNodeRefs.current[(i + 1) % 6];
+      if (!a || !b) { v += 6; continue; }
+      edgePositions[v++] = a.position.x; edgePositions[v++] = a.position.y; edgePositions[v++] = 0;
+      edgePositions[v++] = b.position.x; edgePositions[v++] = b.position.y; edgePositions[v++] = 0;
+    }
+    for (let i = 0; i < 6; i++) {
+      const inner = innerNodeRefs.current[i];
+      const outerIdx = Math.round(i * 8 / 6) % 8;
+      const outer = outerNodeRefs.current[outerIdx];
+      if (!inner || !outer) { v += 6; continue; }
+      edgePositions[v++] = inner.position.x; edgePositions[v++] = inner.position.y; edgePositions[v++] = 0;
+      edgePositions[v++] = outer.position.x; edgePositions[v++] = outer.position.y; edgePositions[v++] = 0;
+    }
+    edgeGeo.attributes.position.needsUpdate = true;
+  });
+
+  return (
+    <>
+      {/* Hub */}
+      <mesh position={[0, 0, 0]}>
+        <sphereGeometry args={[0.12, 12, 12]} />
+        <meshStandardMaterial color="#ff6b35" transparent opacity={opacity} />
+      </mesh>
+      <mesh position={[0, 0, 0]}>
+        <ringGeometry args={[0.3, 0.42, 32]} />
+        <meshBasicMaterial color="#ff6b35" transparent opacity={opacity * 0.12} side={THREE.DoubleSide} />
+      </mesh>
+      {/* Inner ring */}
+      {innerBaseAngles.map((a, i) => (
+        <mesh
+          key={`inner-${i}`}
+          ref={(el) => { innerNodeRefs.current[i] = el; }}
+          position={[Math.cos(a) * 0.9, Math.sin(a) * 0.9, 0]}
+        >
+          <sphereGeometry args={[0.07, 12, 12]} />
+          <meshStandardMaterial color="#ff6b35" transparent opacity={opacity} />
+        </mesh>
+      ))}
+      {/* Outer ring */}
+      {outerBaseAngles.map((a, i) => (
+        <mesh
+          key={`outer-${i}`}
+          ref={(el) => { outerNodeRefs.current[i] = el; }}
+          position={[Math.cos(a) * 1.65, Math.sin(a) * 1.65, 0]}
+        >
+          <sphereGeometry args={[0.05, 12, 12]} />
+          <meshStandardMaterial color="#ff8c5a" transparent opacity={opacity * 0.8} />
+        </mesh>
+      ))}
+      {/* Dynamic edge buffer */}
+      <lineSegments geometry={edgeGeo}>
+        <lineBasicMaterial color="#ff6b35" transparent opacity={opacity * 0.35} />
+      </lineSegments>
+    </>
+  );
+}
+
+// ─── Scene 5: Solder Cluster ──────────────────────────────────────────────────
+
+const CORE_BASES: [number, number, number][] = [
+  [0,      0,      0   ],
+  [0.25,   0.18,   0.1 ],
+  [-0.20,  0.22,  -0.05],
+  [0.15,  -0.20,   0.08],
+  [-0.18, -0.15,   0.12],
+];
+const CORE_PHASES = [0, 0.7, 1.4, 2.1, 2.8];
+const CORE_RADII  = [0.13, 0.08, 0.07, 0.08, 0.06];
+
+const TENDRIL_DEFS = ([
+  { originIdx: 0, angle: 0,                  z:  0.10 },
+  { originIdx: 0, angle: Math.PI,             z: -0.10 },
+  { originIdx: 1, angle: Math.PI / 4,         z:  0.15 },
+  { originIdx: 2, angle: 3 * Math.PI / 4,     z: -0.05 },
+  { originIdx: 3, angle: 5 * Math.PI / 4,     z:  0.10 },
+  { originIdx: 4, angle: 7 * Math.PI / 4,     z: -0.10 },
+] as const).map((t, i) => {
+  const dx = Math.cos(t.angle);
+  const dy = Math.sin(t.angle);
+  return {
+    originIdx: t.originIdx,
+    phase: i * 1.05,
+    tip1Base: [dx * 0.9, dy * 0.9, t.z] as [number, number, number],
+    tip2Base: [dx * 1.7, dy * 1.7, t.z] as [number, number, number],
+  };
+});
+
+function SolderScene({ opacity }: { opacity: number }) {
+  const coreRefs = useRef<(THREE.Mesh | null)[]>([]);
+  const tip1Refs = useRef<(THREE.Mesh | null)[]>([]);
+  const tip2Refs = useRef<(THREE.Mesh | null)[]>([]);
+
+  // 10 core edges + 6 tendrils × 2 segments = 22 edges → 44 vertices → 132 floats
+  const edgePositions = useMemo(() => new Float32Array(132), []);
+  const edgeGeo = useMemo(() => {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(edgePositions, 3));
+    return g;
+  }, [edgePositions]);
+
+  useFrame((state) => {
+    const t = state.clock.elapsedTime;
+
+    coreRefs.current.forEach((mesh, i) => {
+      if (!mesh) return;
+      const base = CORE_BASES[i];
+      const ph = CORE_PHASES[i];
+      mesh.position.x = base[0] + Math.sin(t * 3.5 + ph) * 0.02;
+      mesh.position.y = base[1] + Math.cos(t * 3.5 + ph * 1.3) * 0.02;
+    });
+
+    TENDRIL_DEFS.forEach((tendril, i) => {
+      const { tip1Base, tip2Base, phase: ph } = tendril;
+      const t1 = tip1Refs.current[i];
+      const t2 = tip2Refs.current[i];
+      if (t1) {
+        t1.position.x = tip1Base[0] + Math.sin(t * 1.2 + ph) * 0.08;
+        t1.position.y = tip1Base[1] + Math.cos(t * 1.0 + ph) * 0.08;
+      }
+      if (t2) {
+        t2.position.x = tip2Base[0] + Math.sin(t * 0.8 + ph * 0.7) * 0.15;
+        t2.position.y = tip2Base[1] + Math.cos(t * 0.7 + ph * 0.7) * 0.15;
+      }
+    });
+
+    let v = 0;
+    // Core fully connected: 10 edges
+    for (let i = 0; i < 5; i++) {
+      for (let j = i + 1; j < 5; j++) {
+        const a = coreRefs.current[i];
+        const b = coreRefs.current[j];
+        if (!a || !b) { v += 6; continue; }
+        edgePositions[v++] = a.position.x; edgePositions[v++] = a.position.y; edgePositions[v++] = a.position.z;
+        edgePositions[v++] = b.position.x; edgePositions[v++] = b.position.y; edgePositions[v++] = b.position.z;
+      }
+    }
+    // Tendril chains: hub→tip1, tip1→tip2 (6 tendrils × 2 = 12 edges)
+    TENDRIL_DEFS.forEach((tendril, i) => {
+      const hub = coreRefs.current[tendril.originIdx];
+      const t1  = tip1Refs.current[i];
+      const t2  = tip2Refs.current[i];
+      if (hub && t1) {
+        edgePositions[v++] = hub.position.x; edgePositions[v++] = hub.position.y; edgePositions[v++] = hub.position.z;
+        edgePositions[v++] = t1.position.x;  edgePositions[v++] = t1.position.y;  edgePositions[v++] = t1.position.z;
+      } else { v += 6; }
+      if (t1 && t2) {
+        edgePositions[v++] = t1.position.x; edgePositions[v++] = t1.position.y; edgePositions[v++] = t1.position.z;
+        edgePositions[v++] = t2.position.x; edgePositions[v++] = t2.position.y; edgePositions[v++] = t2.position.z;
+      } else { v += 6; }
+    });
+    edgeGeo.attributes.position.needsUpdate = true;
+  });
+
+  return (
+    <>
+      {CORE_BASES.map((base, i) => (
+        <mesh key={`core-${i}`} ref={(el) => { coreRefs.current[i] = el; }} position={[...base]}>
+          <sphereGeometry args={[CORE_RADII[i], 12, 12]} />
+          <meshStandardMaterial color="#ff6b35" transparent opacity={opacity} />
+        </mesh>
+      ))}
+      {/* Hub glow rings */}
+      <mesh position={[0, 0, 0]}>
+        <ringGeometry args={[0.30, 0.40, 32]} />
+        <meshBasicMaterial color="#ff6b35" transparent opacity={opacity * 0.15} side={THREE.DoubleSide} />
+      </mesh>
+      <mesh position={[0, 0, 0]}>
+        <ringGeometry args={[0.50, 0.65, 32]} />
+        <meshBasicMaterial color="#ff6b35" transparent opacity={opacity * 0.07} side={THREE.DoubleSide} />
+      </mesh>
+      {/* Tendril tips */}
+      {TENDRIL_DEFS.map((t, i) => (
+        <group key={`tendril-${i}`}>
+          <mesh ref={(el) => { tip1Refs.current[i] = el; }} position={[...t.tip1Base]}>
+            <sphereGeometry args={[0.045, 8, 8]} />
+            <meshStandardMaterial color="#ff8c5a" transparent opacity={opacity * 0.8} />
+          </mesh>
+          <mesh ref={(el) => { tip2Refs.current[i] = el; }} position={[...t.tip2Base]}>
+            <sphereGeometry args={[0.025, 8, 8]} />
+            <meshStandardMaterial color="#cc5528" transparent opacity={opacity * 0.6} />
           </mesh>
         </group>
       ))}
-      {/* Nodes */}
-      {nodes.map((n, i) => (
-        <mesh key={i} position={[n.x, n.y, n.z]}>
-          <sphereGeometry args={[n.size, 8, 8]} />
-          <meshStandardMaterial color="#ff6b35" emissive="#cc5528" emissiveIntensity={0.3} transparent opacity={opacity} />
-        </mesh>
-      ))}
-    </group>
+      {/* Edge buffer */}
+      <lineSegments geometry={edgeGeo}>
+        <lineBasicMaterial color="#ff6b35" transparent opacity={opacity * 0.4} />
+      </lineSegments>
+    </>
   );
 }
 
-function CodeMatrix({ opacity = 1 }: { opacity: number }) {
-  const ref = useRef<THREE.Group>(null!);
-  const cubes = useMemo(() => {
-    return Array.from({ length: 40 }, () => ({
-      pos: [(Math.random() - 0.5) * 3, (Math.random() - 0.5) * 3, (Math.random() - 0.5) * 2] as [number, number, number],
-      size: 0.05 + Math.random() * 0.1,
-      speed: 0.5 + Math.random() * 1.5,
-      offset: Math.random() * Math.PI * 2,
-    }));
-  }, []);
+// ─── SceneManager ─────────────────────────────────────────────────────────────
 
-  useFrame((state) => {
-    if (ref.current) {
-      ref.current.children.forEach((child, i) => {
-        const cube = cubes[i];
-        if (cube && child) {
-          child.position.y = cube.pos[1] + Math.sin(state.clock.elapsedTime * cube.speed + cube.offset) * 0.3;
-        }
-      });
-    }
-  });
-
-  return (
-    <group ref={ref}>
-      {cubes.map((c, i) => (
-        <mesh key={i} position={c.pos}>
-          <boxGeometry args={[c.size, c.size, c.size]} />
-          <meshStandardMaterial
-            color={i % 3 === 0 ? '#ff6b35' : '#888'}
-            emissive={i % 3 === 0 ? '#cc5528' : '#000'}
-            emissiveIntensity={i % 3 === 0 ? 0.2 : 0}
-            transparent
-            opacity={opacity}
-            metalness={0.5}
-            roughness={0.3}
-          />
-        </mesh>
-      ))}
-    </group>
-  );
-}
-
-function PCBBoard({ opacity = 1 }: { opacity: number }) {
-  const ref = useRef<THREE.Group>(null!);
-  const traces = useMemo(() => {
-    return Array.from({ length: 20 }, () => {
-      const angle = Math.random() * Math.PI * 2;
-      const r = 0.3 + Math.random() * 0.9;
-      return {
-        start: [Math.cos(angle) * r * 0.3, Math.sin(angle) * r * 0.3, 0] as [number, number, number],
-        end: [Math.cos(angle) * r, Math.sin(angle) * r, 0] as [number, number, number],
-        width: 0.01 + Math.random() * 0.02,
-      };
-    });
-  }, []);
-
-  useFrame((state) => {
-    if (ref.current) {
-      ref.current.rotation.z = state.clock.elapsedTime * 0.1;
-    }
-  });
-
-  return (
-    <group ref={ref}>
-      {/* Board */}
-      <mesh>
-        <circleGeometry args={[1.5, 32]} />
-        <meshStandardMaterial color="#1a0e08" transparent opacity={opacity * 0.8} />
-      </mesh>
-      {/* Traces */}
-      {traces.map((t, i) => {
-        const mid = [(t.start[0] + t.end[0]) / 2, (t.start[1] + t.end[1]) / 2, 0.01] as [number, number, number];
-        const length = Math.sqrt(Math.pow(t.end[0] - t.start[0], 2) + Math.pow(t.end[1] - t.start[1], 2));
-        const angle = Math.atan2(t.end[1] - t.start[1], t.end[0] - t.start[0]);
-        return (
-          <mesh key={i} position={mid} rotation={[0, 0, angle]}>
-            <boxGeometry args={[length, t.width, 0.005]} />
-            <meshStandardMaterial color="#ff8c5a" emissive="#ff8c5a" emissiveIntensity={0.2} transparent opacity={opacity} />
-          </mesh>
-        );
-      })}
-      {/* Components */}
-      {[0, 1, 2, 3, 4, 5].map((i) => {
-        const angle = (i / 6) * Math.PI * 2;
-        return (
-          <mesh key={`comp-${i}`} position={[Math.cos(angle) * 0.7, Math.sin(angle) * 0.7, 0.03]}>
-            <boxGeometry args={[0.12, 0.08, 0.04]} />
-            <meshStandardMaterial color="#333" metalness={0.8} roughness={0.3} transparent opacity={opacity} />
-          </mesh>
-        );
-      })}
-    </group>
-  );
-}
-
-function SolderingScene({ opacity = 1 }: { opacity: number }) {
-  const ref = useRef<THREE.Group>(null!);
-  const sparkPositions = useMemo(() => {
-    return Array.from({ length: 30 }, () => ({
-      pos: [(Math.random() - 0.5) * 2, (Math.random() - 0.5) * 2, (Math.random() - 0.5) * 2] as [number, number, number],
-      speed: 1 + Math.random() * 3,
-    }));
-  }, []);
-
-  useFrame((state) => {
-    if (ref.current) {
-      ref.current.children.forEach((child, i) => {
-        if (sparkPositions[i] && child) {
-          const t = state.clock.elapsedTime * sparkPositions[i].speed;
-          child.position.x = sparkPositions[i].pos[0] + Math.sin(t) * 0.2;
-          child.position.y = sparkPositions[i].pos[1] + Math.cos(t) * 0.2;
-        }
-      });
-    }
-  });
-
-  return (
-    <group>
-      {/* Iron tip */}
-      <mesh position={[0, -0.5, 0]} rotation={[0, 0, Math.PI * 0.25]}>
-        <coneGeometry args={[0.08, 1.5, 8]} />
-        <meshStandardMaterial color="#888" metalness={0.9} roughness={0.2} transparent opacity={opacity} />
-      </mesh>
-      {/* Glow at tip */}
-      <mesh position={[0.4, 0.1, 0]}>
-        <sphereGeometry args={[0.15, 16, 16]} />
-        <meshStandardMaterial
-          color="#ff6600"
-          emissive="#ff4400"
-          emissiveIntensity={1.5}
-          transparent
-          opacity={opacity}
-        />
-      </mesh>
-      {/* Sparks */}
-      <group ref={ref}>
-        {sparkPositions.map((s, i) => (
-          <mesh key={i} position={[s.pos[0] * 0.5 + 0.4, s.pos[1] * 0.5 + 0.1, s.pos[2] * 0.5]}>
-            <sphereGeometry args={[0.015, 4, 4]} />
-            <meshStandardMaterial
-              color="#ffaa00"
-              emissive="#ff6600"
-              emissiveIntensity={1}
-              transparent
-              opacity={opacity * 0.7}
-            />
-          </mesh>
-        ))}
-      </group>
-    </group>
-  );
-}
+const SCENE_COMPONENTS = [GearScene, ElectronicsScene, CodeScene, PCBScene, SolderScene];
 
 function SceneManager({ activeScene }: { activeScene: number }) {
-  const scenes = [GearShape, CircuitGrid, CodeMatrix, PCBBoard, SolderingScene];
-  const [currentOpacities, setCurrentOpacities] = useState<number[]>(scenes.map((_, i) => (i === 0 ? 1 : 0)));
-  const targetOpacities = useRef<number[]>(scenes.map((_, i) => (i === 0 ? 1 : 0)));
+  const [currentOpacities, setCurrentOpacities] = useState<number[]>(
+    SCENE_COMPONENTS.map((_, i) => (i === 0 ? 1 : 0))
+  );
+  const targetOpacities = useRef<number[]>(
+    SCENE_COMPONENTS.map((_, i) => (i === 0 ? 1 : 0))
+  );
 
   useEffect(() => {
-    targetOpacities.current = scenes.map((_, i) => (i === activeScene ? 1 : 0));
+    targetOpacities.current = SCENE_COMPONENTS.map((_, i) => (i === activeScene ? 1 : 0));
   }, [activeScene]);
 
   useFrame(() => {
     setCurrentOpacities((prev) =>
-      prev.map((o, i) => {
-        const target = targetOpacities.current[i];
-        return o + (target - o) * 0.05;
-      })
+      prev.map((o, i) => o + (targetOpacities.current[i] - o) * 0.05)
     );
   });
 
   return (
-    <Float speed={1} rotationIntensity={0.1} floatIntensity={0.2}>
-      {scenes.map((Scene, i) => {
+    <Float speed={1} rotationIntensity={0.05} floatIntensity={0.1}>
+      {SCENE_COMPONENTS.map((Scene, i) => {
         const opacity = currentOpacities[i];
         if (opacity < 0.01) return null;
         return (
@@ -281,9 +558,9 @@ function SceneManager({ activeScene }: { activeScene: number }) {
   );
 }
 
-interface SolverSceneProps {
-  activeScene: number;
-}
+// ─── Export ───────────────────────────────────────────────────────────────────
+
+interface SolverSceneProps { activeScene: number; }
 
 export default function SolverScene({ activeScene }: SolverSceneProps) {
   return (
