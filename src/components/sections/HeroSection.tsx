@@ -8,7 +8,7 @@ const HeroScene = dynamic(() => import('@/components/three/HeroScene'), {
   loading: () => (
     <div
       className="w-full h-full flex items-center justify-center"
-      style={{ background: 'var(--bg-secondary)', borderRadius: '16px' }}
+      style={{ background: 'transparent' }}
     >
       <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-tertiary)', fontSize: '14px' }}>
         Loading 3D...
@@ -89,8 +89,8 @@ export default function HeroSection() {
         {/* Main hero content */}
         <div className="section-content-col" style={{ padding: 0 }}>
           <div
-            className="w-full max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-2 items-center"
-            style={{ padding: '0 var(--space-2xl)', gap: 'var(--space-3xl)' }}
+            className="w-full max-w-[1400px] mx-auto"
+            style={{ padding: '0 var(--space-2xl)', gap: 'var(--space-3xl)', position: 'relative', overflow: 'hidden' }}
           >
             {/* Left: Content */}
             <div className="z-[2]">
@@ -174,10 +174,35 @@ export default function HeroSection() {
               </div>
             </div>
 
-            {/* Right: 3D Scene */}
-            <div className="hero-3d-container w-full h-[500px] lg:h-[500px] opacity-0 relative">
+            {/* 3D scene: absolutely positioned, bleeds from the right */}
+            <div
+              className="hero-3d-container opacity-0"
+              style={{
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                height: 'calc(100vh - 80px)',
+                minHeight: '600px',
+                width: '80%',
+                zIndex: 0,
+              }}
+            >
               <HeroScene />
             </div>
+
+            {/* Gradient fade mask: fades scene toward the text on the left */}
+            <div
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                height: '100%',
+                width: '60%',
+                background: 'linear-gradient(90deg, rgba(var(--bg-primary-rgb), 1) 0%, rgba(var(--bg-primary-rgb), 1) 35%, rgba(var(--bg-primary-rgb), 0.75) 60%, transparent 100%)',
+                zIndex: 1,
+                pointerEvents: 'none',
+              }}
+            />
           </div>
         </div>
       </div>
