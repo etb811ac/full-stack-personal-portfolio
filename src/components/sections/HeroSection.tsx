@@ -70,7 +70,7 @@ export default function HeroSection() {
     <section
       ref={sectionRef}
       id="hero"
-      style={{ background: 'var(--gradient-hero)', minHeight: '100vh', paddingTop: '80px' }}
+      style={{ background: 'var(--gradient-hero)', minHeight: '100vh', paddingTop: '80px', position: 'relative' }}
     >
       {/* Bottom gradient fade */}
       <div
