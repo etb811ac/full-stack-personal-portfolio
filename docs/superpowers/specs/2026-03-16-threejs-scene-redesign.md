@@ -6,17 +6,17 @@
 
 ## Overview
 
-Replace both existing Three.js scenes (`HeroScene.tsx` and `SolverScene.tsx`) with a unified **Network/Constellation** aesthetic — orange glowing nodes connected by edges, animated continuously. The hero scene expands to full-bleed with a cinematic overlap layout. The solver scene drops its tab buttons and silently morphs between 5 thematic network topologies.
+Replace both existing Three.js scenes (`HeroScene.tsx` and `SolverScene.tsx`) with a unified **Network/Constellation** aesthetic — orange glowing nodes connected by edges, animated continuously. The hero scene expands to cover more of the screen with a cinematic overlap layout. The solver scene drops its tab buttons and silently morphs between 5 thematic network topologies.
 
-**Out of scope:** Section layout changes, typography, color tokens, GSAP scroll animations, Lenis — all unchanged.
+**Out of scope:** Section layout changes outside what is specified here, typography, color tokens, GSAP scroll animations (beyond the targeted adjustments below), Lenis.
 
 ---
 
 ## Aesthetic Direction
 
-**Network / Constellation:** Force-directed-style graph of orange nodes (`#ff6b35`) connected by semi-transparent edges. Nodes pulse gently (opacity flicker). Edges fade in/out. The whole graph breathes and slowly drifts. Mouse parallax on the hero. Orange glow rings on hub nodes.
+**Network / Constellation:** Force-directed-style graph of orange nodes (`#ff6b35`) connected by semi-transparent edges. Nodes pulse gently (opacity flicker). Edges breathe as a whole. The graph slowly drifts and rotates. Mouse parallax on the hero. Orange glow rings on hub nodes.
 
-Color palette (same as existing design system):
+Color palette:
 - Node fill: `#ff6b35`
 - Secondary nodes: `#ff8c5a`
 - Distant/dim nodes: `#cc5528`
@@ -25,112 +25,220 @@ Color palette (same as existing design system):
 
 ---
 
-## HeroScene Redesign
+## globals.css — Add `--bg-primary-rgb`
 
-### Layout Change (in `HeroSection.tsx`)
-
-The 3D canvas currently sits in the right column of a two-column grid. Change it to a full-bleed positioned element that bleeds from the right, overlapping the text column.
-
-**Current structure (simplified):**
-```tsx
-<div className="grid grid-cols-2">
-  <div>{/* text content */}</div>
-  <div>{/* 3D scene */}</div>
-</div>
+Add to the `[data-theme="dark"]` block:
+```css
+--bg-primary-rgb: 13, 13, 13;
 ```
 
-**New structure:**
+Add to the `[data-theme="light"]` block:
+```css
+--bg-primary-rgb: 250, 246, 239;
+```
+
+**Format contract:** The value is a bare comma-separated RGB triplet (no `rgb()` wrapper). This allows use as `rgba(var(--bg-primary-rgb), 0.7)` directly in CSS/inline styles.
+
+---
+
+## HeroSection.tsx — Layout Change
+
+### What changes
+
+Inside `section-content-col`, the current structure is a `max-w-[1400px]` two-column grid. Replace only the **grid** behavior on that div:
+- Remove: `className="... grid grid-cols-1 lg:grid-cols-2 items-center"`
+- Add: `style={{ position: 'relative', overflow: 'hidden' }}` (keep `className="w-full max-w-[1400px] mx-auto"` and the inline `padding` and `gap` styles)
+
+Inside this now-relative wrapper:
+
+**Remove Tailwind height classes from scene div:** The existing `hero-3d-container` div has Tailwind classes `h-[500px]` and `lg:h-[500px]`. These must be removed — they conflict with the new `height: '100%'` inline style.
+
+**Scene div (`hero-3d-container`)** — currently the right column, becomes absolutely positioned:
 ```tsx
-<div style={{ position: 'relative' }}>
-  {/* Scene: absolutely positioned, full width, behind text */}
-  <div style={{
+<div
+  className="hero-3d-container opacity-0"  {/* remove h-[500px] lg:h-[500px] w-full relative — keep only hero-3d-container opacity-0 */}
+  style={{
     position: 'absolute',
     right: 0,
     top: 0,
-    bottom: 0,
+    height: '100%',      {/* height:100% works because parent has explicit height, not just minHeight */}
     width: '80%',
     zIndex: 0,
-    pointerEvents: 'none',
-  }}>
-    <HeroScene />
-  </div>
-  {/* Gradient fade mask: left-to-right, covers ~50% from left */}
-  <div style={{
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    bottom: 0,
-    width: '60%',
-    background: 'linear-gradient(90deg, var(--bg-primary) 0%, var(--bg-primary) 40%, rgba(var(--bg-primary-rgb), 0.7) 70%, transparent 100%)',
-    zIndex: 1,
-    pointerEvents: 'none',
-  }} />
-  {/* Text content: above gradient */}
-  <div style={{ position: 'relative', zIndex: 2 }}>
-    {/* existing text content */}
-  </div>
+    // No pointerEvents: 'none' — canvas must receive mouse events for R3F pointer/parallax
+  }}
+>
+  <HeroScene />
 </div>
 ```
 
-**Note on gradient:** `--bg-primary` is `#0d0d0d` in dark mode and `#faf6ef` in light mode. To avoid hardcoding hex in the mask, add a CSS variable `--bg-primary-rgb` (dark: `13,13,13`; light: `250,246,239`) to `globals.css` alongside the existing `--bg-primary` tokens.
-
-### HeroScene.tsx — New Scene
-
-**Remove:** GlassTorus, WireframeIcosahedron, SmallSpheres, MouseFollower wrapper (replace with new implementation).
-
-**New components:**
-
-#### `HeroNetwork` (main scene component)
-- ~120 nodes randomly distributed across a wide area (x: -8 to 8, y: -5 to 5, z: -3 to 1)
-- Edges: connect nodes within distance threshold ~3.5 units (cap at ~180 edges total)
-- Node sizes: varied — 3 "hub" nodes (radius 0.08), 15 "mid" nodes (radius 0.05), rest "small" (radius 0.03)
-- Hub nodes get a glow ring: `<mesh>` with `<ringGeometry>` and `meshBasicMaterial` at low opacity
-
-#### Node animation
-Each node breathes independently:
+**Gradient fade mask** — new div, added after the scene div:
 ```tsx
-// Per-node opacity flicker via shader or per-mesh opacity animation
-// Simple approach: useFrame drives opacity on each PointsMaterial or mesh
-opacity = 0.5 + Math.sin(clock.elapsedTime * speed + phaseOffset) * 0.3
+<div
+  style={{
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    height: '100%',
+    width: '60%',
+    background: `linear-gradient(90deg, rgba(var(--bg-primary-rgb), 1) 0%, rgba(var(--bg-primary-rgb), 1) 35%, rgba(var(--bg-primary-rgb), 0.75) 60%, transparent 100%)`,
+    zIndex: 1,
+    pointerEvents: 'none',
+  }}
+/>
 ```
 
-Use instanced rendering (`<instancedMesh>`) for all nodes for performance.
+**Text content div** — currently left column, becomes normal-flow (no position change needed). Keep existing markup exactly. It sits above the absolute scene and gradient (z stacking is handled by the gradient mask). Keep `className="z-[2]"` to ensure it is above the gradient.
 
-#### Edge rendering
-Use `THREE.LineSegments` with a `BufferGeometry` built from node pairs. Update edge opacity in `useFrame` based on combined node opacities.
-
-#### Mouse parallax
+**Explicit height on wrapper:** The `position: relative` wrapper needs an explicit `height` (not just `minHeight`) so that `height: '100%'` on the absolutely-positioned scene child resolves correctly. Use `height: 'calc(100vh - 80px)'` (subtracting the navbar's `paddingTop: 80px` from the section). Also add `minHeight: '600px'` as a floor. Update the wrapper div style:
 ```tsx
-// Lerp whole graph group toward mouse position
-groupRef.current.rotation.y += (pointer.x * 0.3 - groupRef.current.rotation.y) * 0.02;
-groupRef.current.rotation.x += (-pointer.y * 0.2 - groupRef.current.rotation.x) * 0.02;
+style={{
+  padding: '0 var(--space-2xl)',
+  gap: 'var(--space-3xl)',
+  position: 'relative',
+  overflow: 'hidden',
+  height: 'calc(100vh - 80px)',
+  minHeight: '600px',
+}}
 ```
 
-#### Slow drift
-The whole graph group rotates very slowly: `rotation.y += 0.0005` per frame.
+### GSAP — no changes needed
 
-#### Particles
-Keep a subtle ambient particle field (200 pts, `#666666`, opacity 0.3) for depth — same as existing but sparser.
+The `.hero-3d-container` class is retained on the scene wrapper div. GSAP animations are unchanged:
+- `x: 80 → 0, opacity: 0 → 1` reveal still works.
+- `y: -60` scroll parallax still works. The parent wrapper has `overflow: hidden`, so the 60px upward shift is clipped cleanly within the section. The section's existing bottom gradient fade (`h-[200px]`) covers any gap.
 
-#### Canvas setup
+### Loading fallback — update style
+
+The `dynamic()` loading fallback currently has `background: 'var(--bg-secondary)', borderRadius: '16px'`. Change to `background: 'transparent'` and remove `borderRadius` so it does not appear as a visible rounded block in the new full-bleed layout:
 ```tsx
-<Canvas
-  camera={{ position: [0, 0, 7], fov: 50 }}
-  dpr={[1, 1.5]}
-  gl={{ antialias: true, alpha: true }}
-  style={{ background: 'transparent' }}
->
+loading: () => (
+  <div className="w-full h-full flex items-center justify-center" style={{ background: 'transparent' }}>
+    <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-tertiary)', fontSize: '14px' }}>
+      Loading 3D...
+    </span>
+  </div>
+),
 ```
 
 ---
 
-## SolverScene Redesign
+## HeroScene.tsx — Full Rewrite
 
-### Tab Buttons Removed (in `SolverSection.tsx`)
+Remove all existing components (GlassTorus, WireframeIcosahedron, SmallSpheres, MouseFollower, Particles). Full rewrite.
 
-Remove the tab button row rendered below the 3D canvas. The `activeScene` state and auto-cycle interval remain — the scene still advances every 3 seconds, it just does so silently with no visible controls.
+### Node rendering — individual meshes (NOT instancedMesh)
 
-The `sceneSteps` array and `handleStepClick` can be removed since there are no buttons. Keep only:
+Use **120 individual `<mesh>` elements** for nodes. `instancedMesh` cannot support per-instance opacity animation without a custom shader. 120 individual meshes is well within Three.js performance limits.
+
+### Node data
+
+```tsx
+interface HeroNode {
+  position: [number, number, number];
+  radius: number;
+  isHub: boolean;
+  speed: number;    // oscillation speed for opacity flicker
+  phase: number;    // phase offset
+  baseOpacity: number;
+}
+```
+
+Generate with `useMemo` (stable across renders):
+- 3 hub nodes: `radius: 0.08`, scattered in central zone (x: −3..3, y: −2..2, z: −1..0), `baseOpacity: 0.9`
+- 15 mid nodes: `radius: 0.05`, distributed across scene, `baseOpacity: 0.75`
+- 102 small nodes: `radius: 0.03`, scattered across full space (x: −8..8, y: −5..5, z: −3..1), `baseOpacity: 0.55`
+
+All `speed` and `phase` values: random on generation (`speed: 0.4 + Math.random() * 0.8`, `phase: Math.random() * Math.PI * 2`).
+
+### Mesh refs — ref array pattern
+
+```tsx
+const nodeRefs = useRef<(THREE.Mesh | null)[]>([]);
+
+// In JSX:
+{nodes.map((node, i) => (
+  <mesh key={i} ref={(el) => { nodeRefs.current[i] = el; }} position={node.position}>
+    <sphereGeometry args={[node.radius, 12, 12]} />
+    <meshStandardMaterial color="#ff6b35" transparent opacity={node.baseOpacity} />
+  </mesh>
+))}
+```
+
+### Per-node opacity animation (in `useFrame`)
+
+```tsx
+nodeRefs.current.forEach((mesh, i) => {
+  if (!mesh) return;
+  const node = nodes[i];
+  const mat = mesh.material as THREE.MeshStandardMaterial;
+  mat.opacity = node.baseOpacity + Math.sin(state.clock.elapsedTime * node.speed + node.phase) * 0.25;
+});
+```
+
+### Edges
+
+Connect node pairs within distance 3.5 units. Cap at 180 edges. Build a `THREE.BufferGeometry` with line segments (2 vertices per edge). Use a single `THREE.LineBasicMaterial`:
+
+```tsx
+const edgeMaterialRef = useRef(new THREE.LineBasicMaterial({ color: '#ff6b35', transparent: true, opacity: 0.35 }));
+
+// In useFrame:
+edgeMaterialRef.current.opacity = 0.3 + Math.sin(state.clock.elapsedTime * 0.4) * 0.1;
+```
+
+The edge geometry is built once from the static node positions and does not change each frame.
+
+### Glow rings on hub nodes
+
+Each hub gets two `<mesh>` siblings with `<ringGeometry>`:
+```tsx
+<mesh position={hubNode.position}>
+  <ringGeometry args={[hubNode.radius * 2.5, hubNode.radius * 3.5, 32]} />
+  <meshBasicMaterial color="#ff6b35" transparent opacity={0.12} side={THREE.DoubleSide} />
+</mesh>
+```
+
+### Mouse parallax
+
+```tsx
+const groupRef = useRef<THREE.Group>(null!);
+// In useFrame:
+groupRef.current.rotation.y += (state.pointer.x * 0.3 - groupRef.current.rotation.y) * 0.02;
+groupRef.current.rotation.x += (-state.pointer.y * 0.2 - groupRef.current.rotation.x) * 0.02;
+groupRef.current.rotation.y += 0.0003; // additive slow drift
+```
+
+### Ambient particles
+
+Keep pattern from existing scene: 200 pts, `#666666`, `opacity: 0.25`, slow rotation `* 0.01`:
+```tsx
+function Particles() {
+  // existing implementation, just updated count and opacity
+}
+```
+
+### Canvas setup
+
+```tsx
+<Canvas camera={{ position: [0, 0, 7], fov: 50 }} dpr={[1, 1.5]} gl={{ antialias: true, alpha: true }} style={{ background: 'transparent' }}>
+  <ambientLight intensity={0.3} />
+  <directionalLight position={[5, 5, 5]} intensity={0.8} />
+  <pointLight position={[-3, 2, 4]} intensity={0.5} color="#ff6b35" />
+  {/* hemisphereLight is removed — it is NOT carried over from the old HeroScene */}
+  <group ref={groupRef}>
+    {/* nodes, edges, glow rings */}
+  </group>
+  <Particles />
+</Canvas>
+```
+
+---
+
+## SolverSection.tsx — Remove Tab Buttons
+
+Remove: the entire tab button row (`<div className="absolute bottom-6 left-1/2 ...">` and its `{sceneSteps.map(...)}` content), the `sceneSteps` array constant, the `handleStepClick` function, and the `intervalRef` useRef declaration (no longer needed).
+
+Replace the auto-cycle logic with:
 ```tsx
 const [activeScene, setActiveScene] = useState(0);
 useEffect(() => {
@@ -139,60 +247,276 @@ useEffect(() => {
 }, []);
 ```
 
-### SolverScene.tsx — 5 Thematic Topologies
+Keep: GSAP `.solver-3d-wrap` animation, the `SolverScene` component receiving `activeScene` prop, all content (heading, paragraphs, trait tags).
 
-Replace all 5 existing scene components (GearShape, CircuitGrid, CodeMatrix, PCBBoard, SolderingScene) with 5 new network topologies. All share the same node/edge visual language but differ in topology and motion.
+---
 
-#### Shared infrastructure
-- `NetworkGraph` component accepts `nodes: NodeDef[]` and `edges: EdgeDef[]` plus `opacity: number`
-- Morphs smoothly using the existing `SceneManager` opacity-fade pattern
-- All scenes use the same `meshStandardMaterial` for nodes and `LineSegments` for edges
+## SolverScene.tsx — Full Rewrite
+
+### Lights — retain exactly
 
 ```tsx
-interface NodeDef {
-  position: [number, number, number];
-  radius: number;
-  color?: string;
-  isHub?: boolean;
-}
-interface EdgeDef {
-  from: number; // node index
-  to: number;
+<ambientLight intensity={0.4} />
+<directionalLight position={[3, 3, 5]} intensity={0.7} />
+<pointLight position={[-2, 1, 3]} intensity={0.4} color="#ff6b35" />
+<hemisphereLight args={['#ffffff', '#444444', 0.5]} />
+```
+
+### `NetworkGraph` shared component (used by Scenes 1–4)
+
+```tsx
+interface NodeDef { position: [number, number, number]; radius: number; color?: string; isHub?: boolean; }
+interface EdgeDef { from: number; to: number; }
+
+function NetworkGraph({ nodes, edges, opacity }: { nodes: NodeDef[]; edges: EdgeDef[]; opacity: number }) {
+  // ...build edge geometry from nodes + edges...
+  return (
+    <>
+      {nodes.map((node, i) => (
+        <group key={i}>
+          <mesh position={node.position}>
+            <sphereGeometry args={[node.radius, 12, 12]} />
+            <meshStandardMaterial
+              color={node.color ?? '#ff6b35'}
+              transparent
+              opacity={opacity}             // opacity prop applied to EVERY node material
+            />
+          </mesh>
+          {node.isHub && (
+            <mesh position={node.position}>
+              <ringGeometry args={[node.radius * 2.5, node.radius * 3.5, 32]} />
+              <meshBasicMaterial
+                color="#ff6b35"
+                transparent
+                opacity={opacity * 0.12}   // glow ring also respects opacity prop
+                side={THREE.DoubleSide}
+              />
+            </mesh>
+          )}
+        </group>
+      ))}
+      <lineSegments geometry={edgeGeometry}>
+        <lineBasicMaterial color="#ff6b35" transparent opacity={opacity * 0.35} />
+      </lineSegments>
+    </>
+  );
 }
 ```
 
-#### Scene 1: Auto / Mechanical — Gear-Ring Topology
-- 8 outer nodes arranged in a circle (radius 1.2), evenly spaced
-- 1 center hub node (larger, isHub: true)
-- Edges: all outer nodes → center (spokes), each outer node → both neighbors (ring)
-- Animation: entire graph rotates around Z axis at 0.3 rad/s
+**Key rule:** Every `material` inside `NetworkGraph` must multiply its base opacity by the `opacity` prop. This ensures the SceneManager cross-fade works correctly — no material pops at the transition boundaries.
 
-#### Scene 2: Electronics — Grid Matrix
-- 3×3 grid of nodes at integer positions × 0.7 spacing, centered
-- Center node: hub (larger)
-- Edges: all horizontal and vertical neighbors connected
-- Animation: gentle Y-axis sway `Math.sin(t * 0.2) * 0.15`; pulse animation on edges (opacity cycles sequentially through rows)
+### SceneManager — retain existing opacity-fade pattern
 
-#### Scene 3: Code — Dependency Tree
-- Root node at top center
-- 2 child nodes (level 2), 4 grandchild nodes (level 3), 4 leaf nodes (level 4)
-- Positions: tree layout, evenly spaced per level
-- Edges: parent → children only; one dashed cross-link between level-3 siblings (rendered as a separate `LineDashedMaterial` segment)
-- Animation: nodes at each level bob at slightly different phases; root pulses a glow ring
+The `useState`-in-`useFrame` opacity pattern (calling `setCurrentOpacities` at 60fps) is **intentionally retained** for simplicity — do not refactor to refs.
 
-#### Scene 4: PCB — Radial Concentric Rings
-- Center hub + 6 inner-ring nodes (radius 0.9) + 8 outer-ring nodes (radius 1.6)
-- Edges: center → all inner, inner nodes → both adjacent inner neighbors, each inner → nearest outer
-- Animation: slow Z rotation (0.08 rad/s); outer ring rotates slightly faster than inner (counter-rotate effect)
+Wrap each scene in `<Float speed={1} rotationIntensity={0.05} floatIntensity={0.1}>`.
 
-#### Scene 5: Solder — Dense Cluster + Tendrils
-- Dense core: 5 tightly-packed nodes (radius 0.2–0.5 from center), hub at center
-- 6 tendril chains: each starts at a core node and extends 2 more nodes outward with decreasing node size and opacity
-- Edges: fully connected core cluster + tendril chains
-- Animation: core nodes oscillate with high-frequency jitter (fast speed, small amplitude); tendril tips drift slowly outward and back
+---
 
-#### SceneManager (updated)
-Keep existing opacity-fade pattern. Add Float wrapper per scene with low `rotationIntensity={0.05}` so scenes breathe gently.
+### Scene 1: Auto / Mechanical — Gear-Ring
+
+**Nodes (9 total):**
+- Hub: `[0, 0, 0]`, radius 0.12, isHub: true
+- 8 outer nodes at radius 1.2 from center: `position = [cos(i/8 * 2π) * 1.2, sin(i/8 * 2π) * 1.2, 0]` for i = 0..7, radius 0.07
+
+**Edges:** 8 spokes (each outer → center) + 8 ring edges (each outer → next, wrapping).
+
+**Animation:** Wrap in a `useRef<THREE.Group>` and rotate: `groupRef.current.rotation.z += 0.003` per frame in `useFrame`.
+
+---
+
+### Scene 2: Electronics — Grid Matrix
+
+**Nodes (9 total):** 3×3 grid. `position = [(col - 1) * 0.8, (row - 1) * 0.8, 0]` for col, row in 0..2. Center node (col=1, row=1, index 4) is hub with radius 0.10; others radius 0.06.
+
+**Edges:** Horizontal neighbors + vertical neighbors (no diagonals). 12 edges total.
+
+**Animation:**
+- Group Y-sway: `group.rotation.y = Math.sin(t * 0.2) * 0.2`
+- Edge material opacity pulse: `0.35 + Math.sin(t * 1.2) * 0.1`
+
+---
+
+### Scene 3: Code — Dependency Tree
+
+**Nodes (11 total):**
+- Root: `[0, 1.5, 0]`, radius 0.10, isHub: true
+- L2 (2): `[-0.9, 0.5, 0]` and `[0.9, 0.5, 0]`, radius 0.07
+- L3 (4): `[-1.4, -0.5, 0]`, `[-0.4, -0.5, 0]`, `[0.4, -0.5, 0]`, `[1.4, -0.5, 0]`, radius 0.055
+- L4 (4): `[-1.6, -1.5, 0]`, `[-0.6, -1.5, 0]`, `[0.6, -1.5, 0]`, `[1.6, -1.5, 0]`, radius 0.04, color: `#cc5528`
+
+**Edges (via NetworkGraph):** Root→L2[0], Root→L2[1], L2[0]→L3[0], L2[0]→L3[1], L2[1]→L3[2], L2[1]→L3[3], L3[0]→L4[0], L3[1]→L4[1], L3[2]→L4[2], L3[3]→L4[3].
+
+**Dashed cross-link (separate from NetworkGraph):** A `THREE.Line` between L3[1] (`[-0.4, -0.5, 0]`) and L3[2] (`[0.4, -0.5, 0]`) using `THREE.LineDashedMaterial({ color: '#ff6b35', dashSize: 0.1, gapSize: 0.08, opacity: 0.3, transparent: true })`. **Required:** call `geometry.computeLineDistances()` on this geometry — without it, dashes render as a solid line.
+
+**Node level map for animation:** Store a `level` value alongside each node's base Y position so `useFrame` can apply level-based phase offsets. Define a `CodeNode` array that extends `NodeDef`:
+```tsx
+interface CodeNode extends NodeDef { level: number; baseY: number; phase: number; }
+const codeNodes: CodeNode[] = [
+  { position: [0,    1.5, 0], radius: 0.10, isHub: true, level: 0, baseY: 1.5,  phase: 0 },
+  { position: [-0.9, 0.5, 0], radius: 0.07,              level: 1, baseY: 0.5,  phase: 0.5 },
+  { position: [0.9,  0.5, 0], radius: 0.07,              level: 1, baseY: 0.5,  phase: 1.0 },
+  { position: [-1.4,-0.5, 0], radius: 0.055,             level: 2, baseY: -0.5, phase: 0.3 },
+  { position: [-0.4,-0.5, 0], radius: 0.055,             level: 2, baseY: -0.5, phase: 0.8 },
+  { position: [0.4, -0.5, 0], radius: 0.055,             level: 2, baseY: -0.5, phase: 1.3 },
+  { position: [1.4, -0.5, 0], radius: 0.055,             level: 2, baseY: -0.5, phase: 1.8 },
+  { position: [-1.6,-1.5, 0], radius: 0.04, color: '#cc5528', level: 3, baseY: -1.5, phase: 0.2 },
+  { position: [-0.6,-1.5, 0], radius: 0.04, color: '#cc5528', level: 3, baseY: -1.5, phase: 0.7 },
+  { position: [0.6, -1.5, 0], radius: 0.04, color: '#cc5528', level: 3, baseY: -1.5, phase: 1.2 },
+  { position: [1.6, -1.5, 0], radius: 0.04, color: '#cc5528', level: 3, baseY: -1.5, phase: 1.7 },
+];
+```
+
+**Animation in `useFrame`:**
+```tsx
+nodeRefs.current.forEach((mesh, i) => {
+  if (!mesh) return;
+  const n = codeNodes[i];
+  mesh.position.y = n.baseY + Math.sin(t * 0.8 + n.level * 1.2 + n.phase) * 0.05;
+});
+```
+Use a mesh refs array with the same `ref={(el) => { nodeRefs.current[i] = el; }}` pattern.
+
+---
+
+### Scene 4: PCB — Radial Concentric Rings
+
+**Approach — single group, position-based rotation:**
+
+Do NOT use separate `innerGroupRef` / `outerGroupRef` — edges spanning two independently rotating groups would become visually disconnected. Instead, use a single group and rotate ring nodes' positions directly in `useFrame` using accumulated angle offsets.
+
+**Nodes:**
+- Center hub: `[0, 0, 0]`, radius 0.12, isHub: true
+- Inner ring (6): evenly spaced at radius 0.9 — `[cos(i/6 * 2π) * 0.9, sin(i/6 * 2π) * 0.9, 0]`
+- Outer ring (8): evenly spaced at radius 1.65 — `[cos(i/8 * 2π) * 1.65, sin(i/8 * 2π) * 1.65, 0]`
+
+**Edges:**
+- Center → all 6 inner nodes (spokes)
+- Each inner node → both adjacent inner neighbors (inner ring edges, 6 edges)
+- Each inner node → its nearest outer node (6 edges, matching by angle proximity)
+
+**Animation using accumulated angle offsets (in `useFrame`):**
+```tsx
+innerAngle.current += 0.0008;
+outerAngle.current -= 0.0005;
+
+// Update inner ring node positions
+innerNodeRefs.current.forEach((mesh, i) => {
+  const a = (i / 6) * Math.PI * 2 + innerAngle.current;
+  mesh.position.x = Math.cos(a) * 0.9;
+  mesh.position.y = Math.sin(a) * 0.9;
+});
+
+// Update outer ring node positions
+outerNodeRefs.current.forEach((mesh, i) => {
+  const a = (i / 8) * Math.PI * 2 + outerAngle.current;
+  mesh.position.x = Math.cos(a) * 1.65;
+  mesh.position.y = Math.sin(a) * 1.65;
+});
+
+// Rebuild edge geometry from current node world positions
+// geometry.attributes.position.needsUpdate = true;
+```
+
+**Edge geometry — pre-allocated buffer with explicit write loop:**
+
+Total edges: 6 spokes + 6 inner-ring + 6 inner-to-outer = 18 edges → 36 vertices → `Float32Array(108)`.
+
+Pre-allocate once:
+```tsx
+const edgePositions = useMemo(() => new Float32Array(108), []);
+const edgeGeo = useMemo(() => {
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(edgePositions, 3));
+  return g;
+}, []);
+```
+
+Write loop in `useFrame` (v = vertex index × 3):
+```tsx
+let v = 0;
+// 6 spokes: center → each inner node
+for (let i = 0; i < 6; i++) {
+  const inner = innerNodeRefs.current[i];
+  if (!inner) continue;
+  // vertex A: center hub (always at origin)
+  edgePositions[v++] = 0; edgePositions[v++] = 0; edgePositions[v++] = 0;
+  // vertex B: inner node current position
+  edgePositions[v++] = inner.position.x; edgePositions[v++] = inner.position.y; edgePositions[v++] = 0;
+}
+// 6 inner ring edges: inner[i] → inner[(i+1)%6]
+for (let i = 0; i < 6; i++) {
+  const a = innerNodeRefs.current[i];
+  const b = innerNodeRefs.current[(i + 1) % 6];
+  if (!a || !b) continue;
+  edgePositions[v++] = a.position.x; edgePositions[v++] = a.position.y; edgePositions[v++] = 0;
+  edgePositions[v++] = b.position.x; edgePositions[v++] = b.position.y; edgePositions[v++] = 0;
+}
+// 6 inner-to-outer edges: inner[i] → outer[i] (matched by index — same angular spacing)
+for (let i = 0; i < 6; i++) {
+  const inner = innerNodeRefs.current[i];
+  // Outer ring has 8 nodes; nearest outer to inner[i] is outer[Math.round(i * 8/6) % 8]
+  const outerIdx = Math.round(i * 8 / 6) % 8;
+  const outer = outerNodeRefs.current[outerIdx];
+  if (!inner || !outer) continue;
+  edgePositions[v++] = inner.position.x; edgePositions[v++] = inner.position.y; edgePositions[v++] = 0;
+  edgePositions[v++] = outer.position.x; edgePositions[v++] = outer.position.y; edgePositions[v++] = 0;
+}
+edgeGeo.attributes.position.needsUpdate = true;
+```
+
+---
+
+### Scene 5: Solder — Dense Cluster + Tendrils
+
+**Does NOT use `NetworkGraph`.** Custom component with dynamic node positions.
+
+**Core cluster (5 nodes, static base positions, dynamic jitter):**
+```
+Hub:  [0,     0,     0   ], radius 0.13, isHub: true
+c1:   [0.25,  0.18,  0.1 ], radius 0.08
+c2:   [-0.20, 0.22,  -0.05], radius 0.07
+c3:   [0.15,  -0.20, 0.08], radius 0.08
+c4:   [-0.18, -0.15, 0.12], radius 0.06
+```
+
+**6 tendril chains:** 2 tendrils start from the hub (at opposite angles), 1 tendril each from c1–c4:
+
+| Tendril | Origin | Angle (rad) | Z offset |
+|---|---|---|---|
+| T0 | hub | 0 | 0.1 |
+| T1 | hub | π | -0.1 |
+| T2 | c1 | π/4 | 0.15 |
+| T3 | c2 | 3π/4 | -0.05 |
+| T4 | c3 | 5π/4 | 0.1 |
+| T5 | c4 | 7π/4 | -0.1 |
+
+Each tendril: `tip1` at direction × 0.9, radius 0.045, color: `#ff8c5a`. `tip2` at direction × 1.7, radius 0.025, color: `#cc5528`.
+
+**Core jitter (in `useFrame`):** Each core node oscillates with high-frequency, small amplitude:
+```tsx
+coreRefs.current[i].position.x = basePos.x + Math.sin(t * 3.5 + phase) * 0.02;
+coreRefs.current[i].position.y = basePos.y + Math.cos(t * 3.5 + phase * 1.3) * 0.02;
+```
+
+**Tendril tip animation (in `useFrame`):**
+```tsx
+// tip1
+tip1Refs.current[i].position.x = basePos.x + Math.sin(t * 1.2 + phase) * 0.08;
+tip1Refs.current[i].position.y = basePos.y + Math.cos(t * 1.0 + phase) * 0.08;
+// tip2
+tip2Refs.current[i].position.x = basePos.x + Math.sin(t * 0.8 + phase * 0.7) * 0.15;
+tip2Refs.current[i].position.y = basePos.y + Math.cos(t * 0.7 + phase * 0.7) * 0.15;
+```
+
+**Edge geometry:** Pre-allocate for all edges:
+- Core fully connected: 5 nodes → 10 edges → 20 vertices
+- 6 tendril chains × 2 segments each: 12 edges → 24 vertices
+- Total: 44 vertices → `Float32Array(132)` (44 × 3)
+
+Mutate in `useFrame` from current mesh positions. Set `geometry.attributes.position.needsUpdate = true`.
+
+**Glow rings on hub:** 2 concentric `<ringGeometry>` meshes at radius 0.3–0.4 and 0.5–0.65, `opacity: 0.15` and `0.07`.
 
 ---
 
@@ -200,19 +524,24 @@ Keep existing opacity-fade pattern. Add Float wrapper per scene with low `rotati
 
 | File | Changes |
 |---|---|
-| `src/app/globals.css` | Add `--bg-primary-rgb` token to dark and light mode blocks |
-| `src/components/sections/HeroSection.tsx` | Change 3D scene wrapper to full-bleed positioned layout with gradient mask |
-| `src/components/three/HeroScene.tsx` | Full rewrite: HeroNetwork with instanced nodes, LineSegments edges, mouse parallax, slow drift |
-| `src/components/three/SolverScene.tsx` | Full rewrite: 5 NetworkGraph topology components + updated SceneManager |
-| `src/components/sections/SolverSection.tsx` | Remove tab button row; simplify auto-cycle logic |
+| `src/app/globals.css` | Add `--bg-primary-rgb` to dark and light mode blocks |
+| `src/components/sections/HeroSection.tsx` | Replace two-column grid with position:relative container; add scene wrapper (absolute) + gradient mask; update loading fallback to transparent bg |
+| `src/components/three/HeroScene.tsx` | Full rewrite: 120 individual node meshes with ref array, LineSegments edges, mouse parallax, slow drift, ambient particles. No hemisphereLight. |
+| `src/components/three/SolverScene.tsx` | Full rewrite: NetworkGraph component + 5 topology components (Scenes 1–4 use NetworkGraph; Scene 5 custom) + updated SceneManager |
+| `src/components/sections/SolverSection.tsx` | Remove tab buttons, sceneSteps, handleStepClick, intervalRef; replace with simplified auto-cycle |
 
 ---
 
 ## What Is NOT Changing
 
-- Section structure, IDs, layout, GSAP animations, Lenis
-- Color tokens (reusing existing `--accent`, `--bg-primary`, etc.)
-- `next/font` setup, typography, button styles, cards, navbar, footer
-- The `activeScene` prop interface on SolverScene (still accepts `number`)
-- Mobile responsiveness — scenes already use `w-full h-full` within their containers
+- `section-wrapper` / `section-num-col` / `section-divider-line` / `section-content-col` shell in HeroSection
+- `.hero-3d-container` class name (GSAP targets it)
+- GSAP `.hero-animate` reveal animation
+- GSAP `.hero-3d-container` x-reveal and y parallax animations
+- Solver GSAP `.solver-3d-wrap` animation
+- SolverScene `activeScene: number` prop interface
+- All section content: headings, body text, trait tags, CTAs, scroll indicator
+- Color tokens, typography, button styles, cards, navbar, footer
+- `next/font` setup
+- Mobile responsiveness
 - ChatWidget, contact form, testimonials
