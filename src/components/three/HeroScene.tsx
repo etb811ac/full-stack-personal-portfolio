@@ -58,7 +58,7 @@ function GlassTorus() {
     <Float speed={2} rotationIntensity={0.3} floatIntensity={0.5}>
       <mesh ref={meshRef}>
         <torusKnotGeometry args={[1.2, 0.4, 128, 32]} />
-        <meshPhysicalMaterial color="#c8ff00" transmission={0.9} roughness={0.05} thickness={0.5} ior={1.5} />
+        <meshPhysicalMaterial color="#ff6b35" transmission={0.9} roughness={0.05} thickness={0.5} ior={1.5} />
       </mesh>
     </Float>
   );
@@ -153,7 +153,7 @@ export default function HeroScene() {
       >
         <ambientLight intensity={0.3} />
         <directionalLight position={[5, 5, 5]} intensity={0.8} />
-        <pointLight position={[-3, 2, 4]} intensity={0.5} color="#c8ff00" />
+        <pointLight position={[-3, 2, 4]} intensity={0.5} color="#ff6b35" />
         <hemisphereLight args={['#ffffff', '#444444', 0.5]} />
         <MouseFollower />
         <Particles count={400} />

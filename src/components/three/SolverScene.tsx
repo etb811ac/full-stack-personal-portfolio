@@ -76,11 +76,11 @@ function CircuitGrid({ opacity = 1 }: { opacity: number }) {
         <group key={`grid-${val}`}>
           <mesh position={[0, val * 0.5, 0]}>
             <boxGeometry args={[2.5, 0.005, 0.005]} />
-            <meshBasicMaterial color="#c8ff00" transparent opacity={opacity * 0.3} />
+            <meshBasicMaterial color="#ff6b35" transparent opacity={opacity * 0.3} />
           </mesh>
           <mesh position={[val * 0.5, 0, 0]}>
             <boxGeometry args={[0.005, 2.5, 0.005]} />
-            <meshBasicMaterial color="#c8ff00" transparent opacity={opacity * 0.3} />
+            <meshBasicMaterial color="#ff6b35" transparent opacity={opacity * 0.3} />
           </mesh>
         </group>
       ))}
@@ -88,7 +88,7 @@ function CircuitGrid({ opacity = 1 }: { opacity: number }) {
       {nodes.map((n, i) => (
         <mesh key={i} position={[n.x, n.y, n.z]}>
           <sphereGeometry args={[n.size, 8, 8]} />
-          <meshStandardMaterial color="#c8ff00" emissive="#c8ff00" emissiveIntensity={0.3} transparent opacity={opacity} />
+          <meshStandardMaterial color="#ff6b35" emissive="#cc5528" emissiveIntensity={0.3} transparent opacity={opacity} />
         </mesh>
       ))}
     </group>
@@ -123,8 +123,8 @@ function CodeMatrix({ opacity = 1 }: { opacity: number }) {
         <mesh key={i} position={c.pos}>
           <boxGeometry args={[c.size, c.size, c.size]} />
           <meshStandardMaterial
-            color={i % 3 === 0 ? '#c8ff00' : '#888'}
-            emissive={i % 3 === 0 ? '#c8ff00' : '#000'}
+            color={i % 3 === 0 ? '#ff6b35' : '#888'}
+            emissive={i % 3 === 0 ? '#cc5528' : '#000'}
             emissiveIntensity={i % 3 === 0 ? 0.2 : 0}
             transparent
             opacity={opacity}
@@ -162,7 +162,7 @@ function PCBBoard({ opacity = 1 }: { opacity: number }) {
       {/* Board */}
       <mesh>
         <circleGeometry args={[1.5, 32]} />
-        <meshStandardMaterial color="#1a3a1a" transparent opacity={opacity * 0.8} />
+        <meshStandardMaterial color="#ff8c5a" transparent opacity={opacity * 0.8} />
       </mesh>
       {/* Traces */}
       {traces.map((t, i) => {
@@ -172,7 +172,7 @@ function PCBBoard({ opacity = 1 }: { opacity: number }) {
         return (
           <mesh key={i} position={mid} rotation={[0, 0, angle]}>
             <boxGeometry args={[length, t.width, 0.005]} />
-            <meshStandardMaterial color="#c8ff00" emissive="#c8ff00" emissiveIntensity={0.2} transparent opacity={opacity} />
+            <meshStandardMaterial color="#ff8c5a" emissive="#ff8c5a" emissiveIntensity={0.2} transparent opacity={opacity} />
           </mesh>
         );
       })}
@@ -296,7 +296,7 @@ export default function SolverScene({ activeScene }: SolverSceneProps) {
       >
         <ambientLight intensity={0.4} />
         <directionalLight position={[3, 3, 5]} intensity={0.7} />
-        <pointLight position={[-2, 1, 3]} intensity={0.4} color="#c8ff00" />
+        <pointLight position={[-2, 1, 3]} intensity={0.4} color="#ff6b35" />
         <hemisphereLight args={['#ffffff', '#444444', 0.5]} />
         <SceneManager activeScene={activeScene} />
       </Canvas>
