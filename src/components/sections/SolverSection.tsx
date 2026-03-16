@@ -103,146 +103,135 @@ export default function SolverSection() {
     <section
       ref={sectionRef}
       id="about"
-      className="relative"
-      style={{ padding: 'var(--space-6xl) var(--space-2xl)', background: 'var(--bg-secondary)' }}
+      style={{ background: 'var(--bg-primary)' }}
     >
-      <div className="max-w-[1400px] mx-auto">
-        {/* Section number */}
-        <span
-          className="absolute hidden lg:block select-none"
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: '7rem',
-            fontWeight: 700,
-            color: 'var(--border)',
-            right: 'var(--space-2xl)',
-            top: 'var(--space-4xl)',
-            lineHeight: 1,
-          }}
-        >
-          02
-        </span>
-
-        {/* Label */}
-        <div
-          className="solver-reveal opacity-0 flex items-center"
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: '0.75rem',
-            textTransform: 'uppercase',
-            letterSpacing: '0.15em',
-            color: 'var(--text-tertiary)',
-            marginBottom: 'var(--space-lg)',
-            gap: 'var(--space-md)',
-          }}
-        >
-          <span className="w-6 h-px" style={{ background: 'var(--text-tertiary)' }} />
-          About Me
+      <div className="section-wrapper">
+        <div className="section-num-col">
+          <span className="section-num">02</span>
         </div>
+        <div className="section-divider-line" />
+        <div className="section-content-col">
+          {/* Section overline */}
+          <span className="section-overline solver-reveal opacity-0">02 — About</span>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 items-center" style={{ gap: 'var(--space-4xl)' }}>
-          {/* Left: 3D Scene */}
-          <div className="solver-3d-wrap opacity-0 relative w-full h-[550px] lg:h-[550px]">
-            <SolverScene activeScene={activeScene} />
-            {/* Scene step tabs */}
-            <div
-              className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-wrap justify-center z-[2]"
-              style={{ gap: 'var(--space-sm)' }}
-            >
-              {sceneSteps.map((step) => (
-                <button
-                  key={step.id}
-                  onClick={() => handleStepClick(step.id)}
-                  className="whitespace-nowrap cursor-pointer transition-all duration-200"
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '0.75rem',
-                    padding: 'var(--space-xs) var(--space-md)',
-                    borderRadius: '9999px',
-                    background: activeScene === step.id ? 'var(--text-primary)' : 'var(--bg-elevated)',
-                    color: activeScene === step.id ? 'var(--text-inverse)' : 'var(--text-tertiary)',
-                    border: `1px solid ${activeScene === step.id ? 'var(--text-primary)' : 'var(--border)'}`,
-                  }}
-                >
-                  {step.label}
-                </button>
-              ))}
+          <div className="grid grid-cols-1 lg:grid-cols-2 items-center" style={{ gap: 'var(--space-4xl)' }}>
+            {/* Left: 3D Scene */}
+            <div className="solver-3d-wrap opacity-0 relative w-full h-[550px] lg:h-[550px]">
+              <SolverScene activeScene={activeScene} />
+              {/* Scene step tabs */}
+              <div
+                className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-wrap justify-center z-[2]"
+                style={{ gap: 'var(--space-sm)' }}
+              >
+                {sceneSteps.map((step) => (
+                  <button
+                    key={step.id}
+                    onClick={() => handleStepClick(step.id)}
+                    className="whitespace-nowrap cursor-pointer"
+                    style={
+                      activeScene === step.id
+                        ? {
+                            background: 'var(--accent)',
+                            color: 'var(--text-inverse)',
+                            border: '1px solid var(--accent)',
+                            borderRadius: '0',
+                            fontFamily: 'var(--font-mono)',
+                            fontSize: '11px',
+                            letterSpacing: '1px',
+                            padding: '8px 16px',
+                            cursor: 'pointer',
+                          }
+                        : {
+                            background: 'transparent',
+                            color: 'var(--text-secondary)',
+                            border: '1px solid var(--border)',
+                            borderRadius: '0',
+                            fontFamily: 'var(--font-mono)',
+                            fontSize: '11px',
+                            letterSpacing: '1px',
+                            padding: '8px 16px',
+                            cursor: 'pointer',
+                            transition: 'border-color var(--duration-fast), color var(--duration-fast)',
+                          }
+                    }
+                  >
+                    {step.label}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
 
-          {/* Right: Content */}
-          <div>
-            <h2
-              className="solver-reveal opacity-0"
-              style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: 'clamp(2rem, 4vw, 3.5rem)',
-                fontWeight: 700,
-                lineHeight: 1.1,
-                letterSpacing: '-0.02em',
-                marginBottom: 'var(--space-xl)',
-              }}
-            >
-              I&apos;m a problem solver<br />
-              <em style={{ opacity: 0.6 }}>by nature.</em>
-            </h2>
+            {/* Right: Content */}
+            <div>
+              <h2
+                className="solver-reveal opacity-0 editorial-heading"
+                style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', marginBottom: 'var(--space-xl)' }}
+              >
+                <span className="display-word">I&apos;M A PROBLEM</span>
+                <em className="accent-word" style={{ fontSize: '0.85em' }}>solver</em>
+                <span className="display-word">BY NATURE</span>
+              </h2>
 
-            <p
-              className="solver-reveal opacity-0"
-              style={{
-                fontSize: '1.125rem',
-                color: 'var(--text-secondary)',
-                lineHeight: 1.8,
-                marginBottom: 'var(--space-xl)',
-              }}
-            >
-              Before I ever wrote a line of code, I was taking things apart to understand how they work.
-              Fixing cars in the garage. Soldering circuits at the kitchen table. Building furniture from raw lumber.
-              That same curiosity — that need to <em>figure it out</em> — drives every project I take on.
-            </p>
+              <p
+                className="solver-reveal opacity-0"
+                style={{
+                  fontSize: '1.125rem',
+                  color: 'var(--text-secondary)',
+                  lineHeight: 1.8,
+                  marginBottom: 'var(--space-xl)',
+                }}
+              >
+                Before I ever wrote a line of code, I was taking things apart to understand how they work.
+                Fixing cars in the garage. Soldering circuits at the kitchen table. Building furniture from raw lumber.
+                That same curiosity — that need to <em>figure it out</em> — drives every project I take on.
+              </p>
 
-            <p
-              className="solver-reveal opacity-0"
-              style={{
-                fontSize: '1.125rem',
-                color: 'var(--text-secondary)',
-                lineHeight: 1.8,
-                marginBottom: 'var(--space-xl)',
-              }}
-            >
-              When I encounter a problem, I don&apos;t reach for the manual first. I reach for the tools.
-              Whether it&apos;s debugging a complex API integration or rewiring a circuit board,
-              the approach is the same: understand the system, find the bottleneck, build the fix.
-            </p>
+              <p
+                className="solver-reveal opacity-0"
+                style={{
+                  fontSize: '1.125rem',
+                  color: 'var(--text-secondary)',
+                  lineHeight: 1.8,
+                  marginBottom: 'var(--space-xl)',
+                }}
+              >
+                When I encounter a problem, I don&apos;t reach for the manual first. I reach for the tools.
+                Whether it&apos;s debugging a complex API integration or rewiring a circuit board,
+                the approach is the same: understand the system, find the bottleneck, build the fix.
+              </p>
 
-            {/* Trait tags */}
-            <div className="solver-reveal opacity-0 flex flex-wrap" style={{ gap: 'var(--space-sm)' }}>
-              {traits.map((trait) => (
-                <span
-                  key={trait}
-                  className="transition-all duration-200 cursor-default"
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '0.75rem',
-                    padding: 'var(--space-sm) var(--space-md)',
-                    border: '1px solid var(--border)',
-                    borderRadius: '9999px',
-                    color: 'var(--text-secondary)',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--text-tertiary)';
-                    e.currentTarget.style.color = 'var(--text-primary)';
-                    e.currentTarget.style.background = 'var(--bg-hover)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = 'var(--border)';
-                    e.currentTarget.style.color = 'var(--text-secondary)';
-                    e.currentTarget.style.background = 'transparent';
-                  }}
-                >
-                  {trait}
-                </span>
-              ))}
+              {/* Trait tags */}
+              <div className="solver-reveal opacity-0 flex flex-wrap" style={{ gap: 'var(--space-sm)' }}>
+                {traits.map((trait) => (
+                  <span
+                    key={trait}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      padding: '6px 12px',
+                      border: '1px solid var(--border)',
+                      borderRadius: '0',
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: '11px',
+                      letterSpacing: '1px',
+                      color: 'var(--text-secondary)',
+                      background: 'transparent',
+                      transition: 'border-color var(--duration-fast), color var(--duration-fast)',
+                      cursor: 'default',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = 'var(--accent)';
+                      e.currentTarget.style.color = 'var(--accent)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = 'var(--border)';
+                      e.currentTarget.style.color = 'var(--text-secondary)';
+                    }}
+                  >
+                    {trait}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
         </div>
