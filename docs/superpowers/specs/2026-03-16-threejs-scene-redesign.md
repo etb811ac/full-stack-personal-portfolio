@@ -53,7 +53,7 @@ Inside this now-relative wrapper:
 
 **Remove Tailwind height classes from scene div:** The existing `hero-3d-container` div has Tailwind classes `h-[500px]` and `lg:h-[500px]`. These must be removed — they conflict with the new `height: '100%'` inline style.
 
-**Scene div (`hero-3d-container`)** — currently the right column, becomes absolutely positioned:
+**Scene div (`hero-3d-container`)** — currently the right column, becomes absolutely positioned with an **explicit height** (not `height: '100%'`) to avoid dependency on the parent height chain:
 ```tsx
 <div
   className="hero-3d-container opacity-0"  {/* remove h-[500px] lg:h-[500px] w-full relative — keep only hero-3d-container opacity-0 */}
@@ -61,7 +61,8 @@ Inside this now-relative wrapper:
     position: 'absolute',
     right: 0,
     top: 0,
-    height: '100%',      {/* height:100% works because parent has explicit height, not just minHeight */}
+    height: 'calc(100vh - 80px)', // explicit height — matches section's visible area (100vh minus paddingTop)
+    minHeight: '600px',           // floor for small viewports
     width: '80%',
     zIndex: 0,
     // No pointerEvents: 'none' — canvas must receive mouse events for R3F pointer/parallax
@@ -89,15 +90,15 @@ Inside this now-relative wrapper:
 
 **Text content div** — currently left column, becomes normal-flow (no position change needed). Keep existing markup exactly. It sits above the absolute scene and gradient (z stacking is handled by the gradient mask). Keep `className="z-[2]"` to ensure it is above the gradient.
 
-**Explicit height on wrapper:** The `position: relative` wrapper needs an explicit `height` (not just `minHeight`) so that `height: '100%'` on the absolutely-positioned scene child resolves correctly. Use `height: 'calc(100vh - 80px)'` (subtracting the navbar's `paddingTop: 80px` from the section). Also add `minHeight: '600px'` as a floor. Update the wrapper div style:
+**Wrapper height:** The `position: relative` wrapper only needs `position: 'relative'` and `overflow: 'hidden'` added. Do not set an explicit height on the wrapper — the `section-content-col` and intermediate divs do not have explicit heights, so a percentage-based height on the scene child would collapse. Instead, give the scene div an **explicit height directly** (see below).
+
+Update the wrapper div style (remove the grid, add position/overflow):
 ```tsx
 style={{
   padding: '0 var(--space-2xl)',
   gap: 'var(--space-3xl)',
   position: 'relative',
   overflow: 'hidden',
-  height: 'calc(100vh - 80px)',
-  minHeight: '600px',
 }}
 ```
 
@@ -303,6 +304,23 @@ function NetworkGraph({ nodes, edges, opacity }: { nodes: NodeDef[]; edges: Edge
 }
 ```
 
+**Edge geometry construction inside `NetworkGraph`:**
+```tsx
+const edgeGeometry = useMemo(() => {
+  const positions = new Float32Array(edges.length * 2 * 3); // 2 vertices per edge, 3 floats each
+  edges.forEach(({ from, to }, i) => {
+    const a = nodes[from].position;
+    const b = nodes[to].position;
+    const v = i * 6;
+    positions[v]     = a[0]; positions[v + 1] = a[1]; positions[v + 2] = a[2];
+    positions[v + 3] = b[0]; positions[v + 4] = b[1]; positions[v + 5] = b[2];
+  });
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  return geo;
+}, [nodes, edges]); // nodes/edges are static per-scene, so this runs once per scene mount
+```
+
 **Key rule:** Every `material` inside `NetworkGraph` must multiply its base opacity by the `opacity` prop. This ensures the SceneManager cross-fade works correctly — no material pops at the transition boundaries.
 
 ### SceneManager — retain existing opacity-fade pattern
@@ -381,6 +399,12 @@ Use a mesh refs array with the same `ref={(el) => { nodeRefs.current[i] = el; }}
 
 ### Scene 4: PCB — Radial Concentric Rings
 
+**Component signature:** Scene 4 does NOT use `NetworkGraph` but still receives `opacity` from `SceneManager` and must apply it to all materials:
+```tsx
+function PCBScene({ opacity }: { opacity: number }) { ... }
+```
+Every `meshStandardMaterial`, `lineBasicMaterial`, and `meshBasicMaterial` (glow rings) inside this component must use `opacity={opacity * BASE}` where `BASE` is the desired base opacity (e.g. `opacity={opacity}` for nodes, `opacity={opacity * 0.35}` for edges). This is the same contract as `NetworkGraph`.
+
 **Approach — single group, position-based rotation:**
 
 Do NOT use separate `innerGroupRef` / `outerGroupRef` — edges spanning two independently rotating groups would become visually disconnected. Instead, use a single group and rotate ring nodes' positions directly in `useFrame` using accumulated angle offsets.
@@ -432,13 +456,15 @@ const edgeGeo = useMemo(() => {
 }, []);
 ```
 
+**Null refs during first frame:** React populates `ref` callbacks synchronously during the initial render commit, so all refs will be assigned before the first `useFrame` call. Do not guard with `continue` — instead, initialize all positions to `[0,0,0]` by default in the pre-allocated buffer, so any stale slots safely draw degenerate (zero-length) line segments that are invisible.
+
 Write loop in `useFrame` (v = vertex index × 3):
 ```tsx
 let v = 0;
 // 6 spokes: center → each inner node
 for (let i = 0; i < 6; i++) {
   const inner = innerNodeRefs.current[i];
-  if (!inner) continue;
+  if (!inner) { v += 6; continue; } // skip but advance v to keep buffer aligned
   // vertex A: center hub (always at origin)
   edgePositions[v++] = 0; edgePositions[v++] = 0; edgePositions[v++] = 0;
   // vertex B: inner node current position
@@ -448,7 +474,7 @@ for (let i = 0; i < 6; i++) {
 for (let i = 0; i < 6; i++) {
   const a = innerNodeRefs.current[i];
   const b = innerNodeRefs.current[(i + 1) % 6];
-  if (!a || !b) continue;
+  if (!a || !b) { v += 6; continue; }
   edgePositions[v++] = a.position.x; edgePositions[v++] = a.position.y; edgePositions[v++] = 0;
   edgePositions[v++] = b.position.x; edgePositions[v++] = b.position.y; edgePositions[v++] = 0;
 }
@@ -458,7 +484,7 @@ for (let i = 0; i < 6; i++) {
   // Outer ring has 8 nodes; nearest outer to inner[i] is outer[Math.round(i * 8/6) % 8]
   const outerIdx = Math.round(i * 8 / 6) % 8;
   const outer = outerNodeRefs.current[outerIdx];
-  if (!inner || !outer) continue;
+  if (!inner || !outer) { v += 6; continue; }
   edgePositions[v++] = inner.position.x; edgePositions[v++] = inner.position.y; edgePositions[v++] = 0;
   edgePositions[v++] = outer.position.x; edgePositions[v++] = outer.position.y; edgePositions[v++] = 0;
 }
@@ -492,6 +518,29 @@ c4:   [-0.18, -0.15, 0.12], radius 0.06
 | T5 | c4 | 7π/4 | -0.1 |
 
 Each tendril: `tip1` at direction × 0.9, radius 0.045, color: `#ff8c5a`. `tip2` at direction × 1.7, radius 0.025, color: `#cc5528`.
+
+**`basePos` definition for tendril tip animation:** Store the tip node's own initial rest position (the constant offset from center, computed once at construction time) in a `baseTip1Positions` and `baseTip2Positions` array alongside the tendril definitions:
+```tsx
+const tendrils = useMemo(() => [
+  // T0: hub, angle=0, zOffset=0.1
+  { originIdx: 0 /* hub */, angle: 0,          z: 0.1  },
+  { originIdx: 0 /* hub */, angle: Math.PI,    z: -0.1 },
+  { originIdx: 1 /* c1  */, angle: Math.PI/4,  z: 0.15 },
+  { originIdx: 2 /* c2  */, angle: 3*Math.PI/4,z: -0.05},
+  { originIdx: 3 /* c3  */, angle: 5*Math.PI/4,z: 0.1  },
+  { originIdx: 4 /* c4  */, angle: 7*Math.PI/4,z: -0.1 },
+].map((t, i) => {
+  const dx = Math.cos(t.angle); const dy = Math.sin(t.angle);
+  return {
+    ...t,
+    phase: i * 1.05,
+    tip1Base: [dx * 0.9, dy * 0.9, t.z] as [number, number, number], // rest position for tip1
+    tip2Base: [dx * 1.7, dy * 1.7, t.z] as [number, number, number], // rest position for tip2
+  };
+}), []);
+```
+
+In `useFrame`, `basePos` for tip1 of tendril `i` is `tendrils[i].tip1Base`; for tip2 it is `tendrils[i].tip2Base`.
 
 **Core jitter (in `useFrame`):** Each core node oscillates with high-frequency, small amplitude:
 ```tsx
