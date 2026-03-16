@@ -32,8 +32,13 @@ export default function Navbar() {
       }}
     >
       {/* Logo */}
-      <a href="#hero" className="font-bold text-xl tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>
-        esteban<span style={{ color: 'var(--text-tertiary)', fontWeight: 300 }}>.dev</span>
+      <a href="#hero" style={{ display: 'flex', alignItems: 'baseline', gap: '2px', textDecoration: 'none' }}>
+        <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', letterSpacing: '0.05em', color: 'var(--text-primary)' }}>
+          ESTEBAN
+        </span>
+        <em style={{ fontFamily: 'var(--font-accent)', fontStyle: 'italic', fontSize: '1.1rem', color: 'var(--accent)' }}>
+          Acuña
+        </em>
       </a>
 
       {/* Desktop Links */}
@@ -42,23 +47,9 @@ export default function Navbar() {
           <li key={link.href}>
             <a
               href={link.href}
-              className="relative text-sm font-medium uppercase tracking-wide transition-colors duration-200 group"
-              style={{
-                fontFamily: 'var(--font-body)',
-                color: 'var(--text-secondary)',
-                letterSpacing: '0.02em',
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text-primary)')}
-              onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-secondary)')}
+              className="nav-link"
             >
               {link.label}
-              <span
-                className="absolute -bottom-1 left-0 h-px w-0 group-hover:w-full transition-all duration-400"
-                style={{
-                  background: 'var(--text-primary)',
-                  transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
-                }}
-              />
             </a>
           </li>
         ))}
@@ -82,7 +73,7 @@ export default function Navbar() {
       {/* Mobile menu */}
       {mobileOpen && (
         <div
-          className="absolute top-full left-0 right-0 flex flex-col items-center py-8 gap-6 md:hidden"
+          className="absolute top-full left-0 right-0 flex flex-col px-8 md:hidden"
           style={{
             background: 'var(--nav-bg)',
             backdropFilter: 'blur(20px)',
@@ -94,8 +85,21 @@ export default function Navbar() {
               key={link.href}
               href={link.href}
               onClick={() => setMobileOpen(false)}
-              className="text-sm font-medium uppercase tracking-wide"
-              style={{ fontFamily: 'var(--font-body)', color: 'var(--text-secondary)' }}
+              style={{
+                fontFamily: 'var(--font-body)',
+                fontSize: '1rem',
+                fontWeight: 600,
+                letterSpacing: '1px',
+                textTransform: 'uppercase' as const,
+                color: 'var(--text-secondary)',
+                textDecoration: 'none',
+                padding: '12px 0',
+                borderBottom: '1px solid var(--border)',
+                display: 'block',
+                transition: 'color var(--duration-fast)',
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text-primary)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-secondary)'; }}
             >
               {link.label}
             </a>
