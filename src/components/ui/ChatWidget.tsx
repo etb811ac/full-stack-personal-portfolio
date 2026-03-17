@@ -1,9 +1,41 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+function AIRobotIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width={26} height={26} fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
+      {/* Antenna */}
+      <line x1="12" y1="2" x2="12" y2="5.5" />
+      <circle cx="12" cy="1.5" r="1" fill="currentColor" stroke="none" />
+      {/* Head */}
+      <rect x="3" y="5.5" width="18" height="14" rx="3.5" />
+      {/* Eyes — rectangular for techy feel */}
+      <rect x="6.5" y="9.5" width="3.5" height="3.5" rx="1" fill="currentColor" stroke="none" />
+      <rect x="14" y="9.5" width="3.5" height="3.5" rx="1" fill="currentColor" stroke="none" />
+      {/* Mouth */}
+      <path d="M8.5 16.5h7" />
+    </svg>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width={16} height={16} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
+      <path d="M18 6 6 18M6 6l12 12" />
+    </svg>
+  );
+}
+
+function SendIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width={16} height={16} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 2 11 13M22 2 15 22l-4-9-9-4 20-7z" />
+    </svg>
+  );
+}
 
 const mockMessages = [
-  { role: 'bot' as const, text: "👋 Hi! I'm Esteban's AI assistant. Ask me anything about his skills, experience, or availability." },
+  { role: 'bot' as const, text: "Hi! I'm Esteban's AI assistant. Ask me anything about his skills, experience, or availability." },
   { role: 'user' as const, text: 'What technologies does Esteban specialize in?' },
   { role: 'bot' as const, text: 'Esteban is a full-stack developer specializing in Next.js, React, Three.js, and GSAP on the frontend, with Python, Django, and LangChain for backend and AI integration. He\'s particularly strong at combining creative 3D experiences with robust architecture.' },
 ];
@@ -56,10 +88,10 @@ export default function ChatWidget() {
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="text-lg cursor-pointer border-none bg-transparent p-1 transition-colors"
+              className="cursor-pointer border-none bg-transparent p-1 transition-colors flex items-center justify-center"
               style={{ color: 'var(--text-tertiary)' }}
             >
-              ✕
+              <CloseIcon />
             </button>
           </div>
 
@@ -120,13 +152,13 @@ export default function ChatWidget() {
               }}
             />
             <button
-              className="w-9 h-9 rounded-full flex items-center justify-center border-none cursor-pointer text-sm transition-transform hover:scale-105"
+              className="w-9 h-9 rounded-full flex items-center justify-center border-none cursor-pointer transition-transform hover:scale-105"
               style={{
                 background: 'var(--text-primary)',
                 color: 'var(--text-inverse)',
               }}
             >
-              →
+              <SendIcon />
             </button>
           </div>
         </div>
@@ -147,7 +179,7 @@ export default function ChatWidget() {
           transform: showTooltip && !isOpen ? 'translateY(0)' : 'translateY(8px)',
         }}
       >
-        💬 <strong style={{ color: 'var(--text-primary)' }}>Ask AI</strong> about Esteban&apos;s skills & experience
+        <strong style={{ color: 'var(--text-primary)' }}>Ask AI</strong> about Esteban&apos;s skills &amp; experience
       </div>
 
       {/* Bubble */}
@@ -169,8 +201,8 @@ export default function ChatWidget() {
             animation: 'chatPulse 3s ease-in-out infinite',
           }}
         />
-        <span className="text-[26px]" style={{ color: 'var(--bg-primary)' }}>
-          🤖
+        <span style={{ color: 'var(--bg-primary)', display: 'flex' }}>
+          <AIRobotIcon />
         </span>
       </div>
 

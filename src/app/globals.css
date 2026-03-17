@@ -233,6 +233,15 @@ a {
   .section-content-col {
     padding: var(--space-4xl) 0;
   }
+  .expertise-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .expertise-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
 }
 
 /* ============================================
