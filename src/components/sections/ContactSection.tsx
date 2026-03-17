@@ -36,11 +36,41 @@ const contactLinks = [
 export default function ContactSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 3000);
+    setSending(true);
+    setError('');
+
+    const form = e.currentTarget;
+    const data = {
+      access_key: process.env.NEXT_PUBLIC_WEB3FORMS_KEY,
+      name:    (form.elements.namedItem('name')    as HTMLInputElement).value,
+      email:   (form.elements.namedItem('email')   as HTMLInputElement).value,
+      subject: (form.elements.namedItem('subject') as HTMLInputElement).value,
+      message: (form.elements.namedItem('message') as HTMLTextAreaElement).value,
+    };
+
+    try {
+      const res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (res.ok) {
+        setSubmitted(true);
+        form.reset();
+        setTimeout(() => setSubmitted(false), 4000);
+      } else {
+        setError('Something went wrong. Please try again.');
+      }
+    } catch {
+      setError('Network error. Please try again.');
+    } finally {
+      setSending(false);
+    }
   };
 
   useEffect(() => {
@@ -166,6 +196,8 @@ export default function ContactSection() {
                   <input
                     type="text"
                     id="name"
+                    name="name"
+                    required
                     placeholder="Your name"
                     style={{
                       width: '100%',
@@ -205,6 +237,8 @@ export default function ContactSection() {
                   <input
                     type="email"
                     id="email"
+                    name="email"
+                    required
                     placeholder="you@example.com"
                     style={{
                       width: '100%',
@@ -246,6 +280,7 @@ export default function ContactSection() {
                 <input
                   type="text"
                   id="subject"
+                  name="subject"
                   placeholder="Project inquiry, collaboration, etc."
                   style={{
                     width: '100%',
@@ -285,6 +320,8 @@ export default function ContactSection() {
                 </label>
                 <textarea
                   id="message"
+                  name="message"
+                  required
                   placeholder="Tell me about your project..."
                   rows={5}
                   className="resize-y"
@@ -312,9 +349,20 @@ export default function ContactSection() {
                 />
               </div>
 
+              {error && (
+                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: '#f87171' }}>
+                  {error}
+                </p>
+              )}
+
               <div>
-                <button type="submit" className="btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
-                  {submitted ? '✓ Message Sent' : 'Send Message'}
+                <button
+                  type="submit"
+                  disabled={sending || submitted}
+                  className="btn-primary"
+                  style={{ width: '100%', justifyContent: 'center', opacity: sending ? 0.7 : 1 }}
+                >
+                  {submitted ? '✓ Message sent' : sending ? 'Sending…' : 'Send Message'}
                 </button>
               </div>
             </form>

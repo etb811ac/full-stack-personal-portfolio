@@ -6,7 +6,7 @@ export default function Footer() {
       className="flex flex-col sm:flex-row justify-between items-center"
       style={{
         borderTop: '1px solid var(--border)',
-        padding: 'var(--space-xl) 30px',
+        padding: 'var(--space-xl) 120px',
         fontFamily: 'var(--font-body)',
         fontSize: '0.8rem',
         color: 'var(--text-tertiary)',

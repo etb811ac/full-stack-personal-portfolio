@@ -1,18 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import ReactMarkdown from 'react-markdown';
+
 function AIRobotIcon() {
   return (
     <svg viewBox="0 0 24 24" width={26} height={26} fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
-      {/* Antenna */}
       <line x1="12" y1="2" x2="12" y2="5.5" />
       <circle cx="12" cy="1.5" r="1" fill="currentColor" stroke="none" />
-      {/* Head */}
       <rect x="3" y="5.5" width="18" height="14" rx="3.5" />
-      {/* Eyes — rectangular for techy feel */}
       <rect x="6.5" y="9.5" width="3.5" height="3.5" rx="1" fill="currentColor" stroke="none" />
       <rect x="14" y="9.5" width="3.5" height="3.5" rx="1" fill="currentColor" stroke="none" />
-      {/* Mouth */}
       <path d="M8.5 16.5h7" />
     </svg>
   );
@@ -34,16 +32,24 @@ function SendIcon() {
   );
 }
 
-const mockMessages = [
-  { role: 'bot' as const, text: "Hi! I'm Esteban's AI assistant. Ask me anything about his skills, experience, or availability." },
-  { role: 'user' as const, text: 'What technologies does Esteban specialize in?' },
-  { role: 'bot' as const, text: 'Esteban is a full-stack developer specializing in Next.js, React, Three.js, and GSAP on the frontend, with Python, Django, and LangChain for backend and AI integration. He\'s particularly strong at combining creative 3D experiences with robust architecture.' },
-];
+interface Message {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+const WELCOME: Message = {
+  role: 'assistant',
+  content: "Hi! I'm Esteban's AI assistant. Ask me anything about his skills, experience, or availability.",
+};
 
 export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
-  const [inputValue, setInputValue] = useState('');
+  const [messages, setMessages] = useState<Message[]>([WELCOME]);
+  const [input, setInput] = useState('');
+  const [streaming, setStreaming] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -54,6 +60,75 @@ export default function ChatWidget() {
     }, 3000);
     return () => clearTimeout(timer);
   }, [isOpen]);
+
+  // Scroll to latest message
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  // Focus input when opened
+  useEffect(() => {
+    if (isOpen) setTimeout(() => inputRef.current?.focus(), 100);
+  }, [isOpen]);
+
+  const send = async () => {
+    const text = input.trim();
+    if (!text || streaming) return;
+
+    const userMessage: Message = { role: 'user', content: text };
+    const history = [...messages, userMessage];
+    setMessages(history);
+    setInput('');
+    setStreaming(true);
+
+    // Add empty assistant message to stream into
+    setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: history.map(m => ({ role: m.role, content: m.content })),
+        }),
+      });
+
+      if (!res.ok || !res.body) throw new Error('Request failed');
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let accumulated = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        accumulated += decoder.decode(value, { stream: true });
+        setMessages(prev => {
+          const updated = [...prev];
+          updated[updated.length - 1] = { role: 'assistant', content: accumulated };
+          return updated;
+        });
+      }
+    } catch {
+      setMessages(prev => {
+        const updated = [...prev];
+        updated[updated.length - 1] = {
+          role: 'assistant',
+          content: 'Sorry, something went wrong. Please try again.',
+        };
+        return updated;
+      });
+    } finally {
+      setStreaming(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      send();
+    }
+  };
 
   return (
     <div className="fixed z-[900]" style={{ bottom: 'var(--space-xl)', right: 'var(--space-xl)' }}>
@@ -74,11 +149,8 @@ export default function ChatWidget() {
         >
           {/* Header */}
           <div
-            className="flex items-center justify-between"
-            style={{
-              padding: 'var(--space-md) var(--space-lg)',
-              borderBottom: '1px solid var(--border)',
-            }}
+            className="flex items-center justify-between shrink-0"
+            style={{ padding: 'var(--space-md) var(--space-lg)', borderBottom: '1px solid var(--border)' }}
           >
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-green-500" />
@@ -98,16 +170,18 @@ export default function ChatWidget() {
           {/* Messages */}
           <div
             className="flex-1 flex flex-col overflow-y-auto"
-            style={{ padding: 'var(--space-lg)', gap: 'var(--space-md)' }}
+            data-lenis-prevent
+            style={{ minHeight: 0, padding: 'var(--space-lg)', gap: 'var(--space-md)', overscrollBehavior: 'contain' }}
           >
-            {mockMessages.map((msg, i) => (
+            {messages.map((msg, i) => (
               <div
                 key={i}
                 className="max-w-[85%] text-sm leading-relaxed"
                 style={{
                   padding: 'var(--space-md) var(--space-lg)',
                   borderRadius: '16px',
-                  ...(msg.role === 'bot'
+                  wordBreak: 'break-word',
+                  ...(msg.role === 'assistant'
                     ? {
                         background: 'var(--bg-tertiary)',
                         alignSelf: 'flex-start',
@@ -119,28 +193,66 @@ export default function ChatWidget() {
                         color: 'var(--text-inverse)',
                         alignSelf: 'flex-end',
                         borderBottomRightRadius: '4px',
+                        whiteSpace: 'pre-wrap',
                       }),
                 }}
               >
-                {msg.text}
+                {msg.role === 'assistant' ? (
+                  <ReactMarkdown
+                    components={{
+                      p:      ({ children }) => <p style={{ margin: '0.25em 0' }}>{children}</p>,
+                      ul:     ({ children }) => <ul style={{ paddingLeft: '1.25em', margin: '0.25em 0' }}>{children}</ul>,
+                      ol:     ({ children }) => <ol style={{ paddingLeft: '1.25em', margin: '0.25em 0' }}>{children}</ol>,
+                      li:     ({ children }) => <li style={{ margin: '0.15em 0' }}>{children}</li>,
+                      strong: ({ children }) => <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{children}</strong>,
+                      code:   ({ children }) => (
+                        <code style={{
+                          fontFamily: 'var(--font-mono)',
+                          fontSize: '0.8em',
+                          background: 'var(--bg-hover)',
+                          padding: '0.1em 0.4em',
+                          borderRadius: '4px',
+                        }}>{children}</code>
+                      ),
+                      pre: ({ children }) => (
+                        <pre style={{
+                          fontFamily: 'var(--font-mono)',
+                          fontSize: '0.78em',
+                          background: 'var(--bg-hover)',
+                          padding: '0.6em 0.8em',
+                          borderRadius: '6px',
+                          overflowX: 'auto',
+                          margin: '0.4em 0',
+                        }}>{children}</pre>
+                      ),
+                    }}
+                  >
+                    {msg.content}
+                  </ReactMarkdown>
+                ) : (
+                  msg.content
+                )}
+                {streaming && i === messages.length - 1 && msg.role === 'assistant' && (
+                  <span style={{ opacity: 0.5, animation: 'blink 1s step-end infinite' }}>▋</span>
+                )}
               </div>
             ))}
+            <div ref={bottomRef} />
           </div>
 
           {/* Input */}
           <div
-            className="flex"
-            style={{
-              padding: 'var(--space-md) var(--space-lg)',
-              borderTop: '1px solid var(--border)',
-              gap: 'var(--space-sm)',
-            }}
+            className="flex shrink-0"
+            style={{ padding: 'var(--space-md) var(--space-lg)', borderTop: '1px solid var(--border)', gap: 'var(--space-sm)' }}
           >
             <input
+              ref={inputRef}
               type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
               placeholder="Ask about skills, projects..."
+              disabled={streaming}
               className="flex-1 text-sm outline-none"
               style={{
                 fontFamily: 'var(--font-body)',
@@ -149,14 +261,14 @@ export default function ChatWidget() {
                 borderRadius: '9999px',
                 background: 'var(--bg-primary)',
                 color: 'var(--text-primary)',
+                opacity: streaming ? 0.6 : 1,
               }}
             />
             <button
-              className="w-9 h-9 rounded-full flex items-center justify-center border-none cursor-pointer transition-transform hover:scale-105"
-              style={{
-                background: 'var(--text-primary)',
-                color: 'var(--text-inverse)',
-              }}
+              onClick={send}
+              disabled={streaming || !input.trim()}
+              className="w-9 h-9 rounded-full flex items-center justify-center border-none cursor-pointer transition-transform hover:scale-105 disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{ background: 'var(--text-primary)', color: 'var(--text-inverse)' }}
             >
               <SendIcon />
             </button>
@@ -184,22 +296,13 @@ export default function ChatWidget() {
 
       {/* Bubble */}
       <div
-        onClick={() => {
-          setIsOpen(!isOpen);
-          setShowTooltip(false);
-        }}
+        onClick={() => { setIsOpen(!isOpen); setShowTooltip(false); }}
         className="w-[60px] h-[60px] rounded-full flex items-center justify-center cursor-pointer relative transition-transform hover:scale-110"
-        style={{
-          background: 'linear-gradient(135deg, var(--text-primary), var(--text-secondary))',
-          boxShadow: 'var(--shadow-lg)',
-        }}
+        style={{ background: 'linear-gradient(135deg, var(--text-primary), var(--text-secondary))', boxShadow: 'var(--shadow-lg)' }}
       >
         <div
           className="absolute -inset-1 rounded-full border-2 opacity-0"
-          style={{
-            borderColor: 'var(--text-primary)',
-            animation: 'chatPulse 3s ease-in-out infinite',
-          }}
+          style={{ borderColor: 'var(--text-primary)', animation: 'chatPulse 3s ease-in-out infinite' }}
         />
         <span style={{ color: 'var(--bg-primary)', display: 'flex' }}>
           <AIRobotIcon />
@@ -209,11 +312,15 @@ export default function ChatWidget() {
       <style jsx>{`
         @keyframes chatOpen {
           from { opacity: 0; transform: translateY(20px) scale(0.95); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
         }
         @keyframes chatPulse {
-          0% { opacity: 0.4; transform: scale(1); }
-          100% { opacity: 0; transform: scale(1.4); }
+          0%   { opacity: 0.4; transform: scale(1);   }
+          100% { opacity: 0;   transform: scale(1.4); }
+        }
+        @keyframes blink {
+          0%, 100% { opacity: 1; }
+          50%       { opacity: 0; }
         }
       `}</style>
     </div>
