@@ -61,8 +61,6 @@ export default function ContactSection() {
       });
       if (res.ok) {
         setSubmitted(true);
-        form.reset();
-        setTimeout(() => setSubmitted(false), 4000);
       } else {
         setError('Something went wrong. Please try again.');
       }
@@ -172,7 +170,77 @@ export default function ContactSection() {
               </div>
             </div>
 
-            {/* Right: Form */}
+            {/* Right: Form or Success */}
+            {submitted ? (
+              <div
+                className="contact-reveal flex flex-col items-center justify-center text-center"
+                style={{
+                  padding: 'var(--space-4xl) var(--space-2xl)',
+                  border: '1px solid var(--border)',
+                  background: 'var(--bg-primary)',
+                  gap: 'var(--space-lg)',
+                  animation: 'success-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both',
+                }}
+              >
+                {/* Animated checkmark */}
+                <div style={{ position: 'relative', width: 64, height: 64 }}>
+                  <svg viewBox="0 0 64 64" width={64} height={64} fill="none">
+                    <circle
+                      cx="32" cy="32" r="30"
+                      stroke="var(--accent)" strokeWidth="2"
+                      style={{ animation: 'circle-draw 0.5s ease forwards' }}
+                      strokeDasharray="188.5"
+                      strokeDashoffset="188.5"
+                    />
+                    <path
+                      d="M18 32l10 10 18-18"
+                      stroke="var(--accent)" strokeWidth="2.5"
+                      strokeLinecap="round" strokeLinejoin="round"
+                      style={{ animation: 'check-draw 0.4s 0.4s ease forwards' }}
+                      strokeDasharray="40"
+                      strokeDashoffset="40"
+                    />
+                  </svg>
+                </div>
+
+                <div>
+                  <div
+                    style={{
+                      fontFamily: 'var(--font-display)',
+                      fontSize: 'clamp(1.5rem, 3vw, 2.25rem)',
+                      letterSpacing: '0.03em',
+                      color: 'var(--text-primary)',
+                      marginBottom: 'var(--space-sm)',
+                    }}
+                  >
+                    MESSAGE SENT
+                  </div>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', lineHeight: 1.7 }}>
+                    Thanks for reaching out.<br />
+                    I'll get back to you as soon as possible.
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => setSubmitted(false)}
+                  style={{
+                    marginTop: 'var(--space-md)',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '0.75rem',
+                    letterSpacing: '0.08em',
+                    textTransform: 'uppercase',
+                    color: 'var(--text-tertiary)',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    textDecoration: 'underline',
+                    textUnderlineOffset: '4px',
+                  }}
+                >
+                  Send another message
+                </button>
+              </div>
+            ) : (
             <form
               id="contact-form"
               onSubmit={handleSubmit}
@@ -358,17 +426,31 @@ export default function ContactSection() {
               <div>
                 <button
                   type="submit"
-                  disabled={sending || submitted}
+                  disabled={sending}
                   className="btn-primary"
                   style={{ width: '100%', justifyContent: 'center', opacity: sending ? 0.7 : 1 }}
                 >
-                  {submitted ? '✓ Message sent' : sending ? 'Sending…' : 'Send Message'}
+                  {sending ? 'Sending…' : 'Send Message'}
                 </button>
               </div>
             </form>
+            )}
           </div>
         </div>
       </div>
+
+      <style>{`
+        @keyframes success-in {
+          from { opacity: 0; transform: translateY(16px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes circle-draw {
+          to { stroke-dashoffset: 0; }
+        }
+        @keyframes check-draw {
+          to { stroke-dashoffset: 0; }
+        }
+      `}</style>
     </section>
   );
 }
