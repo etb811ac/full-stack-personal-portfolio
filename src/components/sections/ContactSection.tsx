@@ -46,7 +46,6 @@ export default function ContactSection() {
 
     const form = e.currentTarget;
     const data = {
-      access_key: process.env.NEXT_PUBLIC_WEB3FORMS_KEY,
       name:    (form.elements.namedItem('name')    as HTMLInputElement).value,
       email:   (form.elements.namedItem('email')   as HTMLInputElement).value,
       subject: (form.elements.namedItem('subject') as HTMLInputElement).value,
@@ -54,9 +53,9 @@ export default function ContactSection() {
     };
 
     try {
-      const res = await fetch('https://api.web3forms.com/submit', {
+      const res = await fetch('/api/contact', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
       if (res.ok) {
