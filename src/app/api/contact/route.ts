@@ -13,8 +13,11 @@ export async function POST(req: Request) {
     }),
   });
 
-  if (!res.ok) {
-    return Response.json({ error: 'Failed to send message.' }, { status: 500 });
+  const body = await res.json();
+
+  if (!res.ok || !body.success) {
+    console.error('Web3Forms error:', body);
+    return Response.json({ error: body.message ?? 'Failed to send message.' }, { status: 500 });
   }
 
   return Response.json({ success: true });

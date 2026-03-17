@@ -58,10 +58,11 @@ export default function ContactSection() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
-      if (res.ok) {
+      const body = await res.json();
+      if (res.ok && body.success) {
         setSubmitted(true);
       } else {
-        setError('Something went wrong. Please try again.');
+        setError(body.error ?? 'Something went wrong. Please try again.');
       }
     } catch {
       setError('Network error. Please try again.');
