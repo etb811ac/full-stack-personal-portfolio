@@ -78,7 +78,37 @@ export default function HeroSection() {
         style={{ background: 'linear-gradient(to top, var(--bg-primary), transparent)' }}
       />
 
-      <div className="section-wrapper">
+      {/* 3D scene: full-width bleed from the right, outside max-width wrapper */}
+      <div
+        className="hero-3d-container opacity-0"
+        style={{
+          position: 'absolute',
+          right: 0,
+          top: 0,
+          height: 'calc(100vh - 80px)',
+          minHeight: '600px',
+          width: '70vw',
+          zIndex: 0,
+        }}
+      >
+        <HeroScene />
+      </div>
+
+      {/* Gradient fade mask: outside max-width wrapper, viewport-relative */}
+      <div
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          height: 'calc(100vh - 80px)',
+          width: '55vw',
+          background: 'linear-gradient(90deg, rgba(var(--bg-primary-rgb), 1) 0%, rgba(var(--bg-primary-rgb), 1) 35%, rgba(var(--bg-primary-rgb), 0.75) 60%, transparent 100%)',
+          zIndex: 1,
+          pointerEvents: 'none',
+        }}
+      />
+
+      <div className="section-wrapper" style={{ position: 'relative', zIndex: 2 }}>
         {/* Ghost number column */}
         <div className="section-num-col">
           <span className="section-num">01</span>
@@ -89,8 +119,8 @@ export default function HeroSection() {
         {/* Main hero content */}
         <div className="section-content-col" style={{ padding: 0 }}>
           <div
-            className="w-full max-w-[1400px] mx-auto"
-            style={{ padding: '0 var(--space-2xl)', gap: 'var(--space-3xl)', position: 'relative', overflow: 'hidden' }}
+            className="w-full"
+            style={{ padding: '0 var(--space-2xl)' }}
           >
             {/* Left: Content */}
             <div className="z-[2] relative">
@@ -173,36 +203,6 @@ export default function HeroSection() {
                 <a href="#expertise" className="btn-ghost">View Expertise</a>
               </div>
             </div>
-
-            {/* 3D scene: absolutely positioned, bleeds from the right */}
-            <div
-              className="hero-3d-container opacity-0"
-              style={{
-                position: 'absolute',
-                right: 0,
-                top: 0,
-                height: 'calc(100vh - 80px)',
-                minHeight: '600px',
-                width: '80%',
-                zIndex: 0,
-              }}
-            >
-              <HeroScene />
-            </div>
-
-            {/* Gradient fade mask: fades scene toward the text on the left */}
-            <div
-              style={{
-                position: 'absolute',
-                left: 0,
-                top: 0,
-                height: 'calc(100vh - 80px)',
-                width: '60%',
-                background: 'linear-gradient(90deg, rgba(var(--bg-primary-rgb), 1) 0%, rgba(var(--bg-primary-rgb), 1) 35%, rgba(var(--bg-primary-rgb), 0.75) 60%, transparent 100%)',
-                zIndex: 1,
-                pointerEvents: 'none',
-              }}
-            />
           </div>
         </div>
       </div>

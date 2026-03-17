@@ -1,0 +1,110 @@
+<h2>Light Mode Feel</h2>
+<p class="subtitle">The orange accent stays in both. What should the light background feel like?</p>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;600&display=swap');
+
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 24px; }
+
+.lm-card {
+  border-radius: 10px; overflow: hidden; cursor: pointer;
+  border: 2px solid transparent; transition: all 0.2s ease; position: relative;
+}
+.lm-card:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0,0,0,0.2); }
+.lm-card.selected { border-color: #ff6b35; box-shadow: 0 0 0 3px rgba(255,107,53,0.25); }
+.lm-card.selected::after {
+  content: '✓'; position: absolute; top: 8px; right: 8px;
+  background: #ff6b35; color: white;
+  width: 22px; height: 22px; border-radius: 50%;
+  display: grid; place-items: center; font-size: 12px; font-weight: 700;
+}
+
+.preview {
+  padding: 24px; height: 200px; overflow: hidden;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  position: relative;
+}
+
+/* Option A: Magazine Paper */
+.preview-a {
+  background: #faf6ef;
+  border-bottom: 1px solid #e8ddd0;
+}
+.preview-a .top-bar { position: absolute; top: 0; left: 0; right: 0; height: 2px; background: #ff6b35; }
+.preview-a .side-num {
+  position: absolute; top: 20px; left: 20px;
+  font-family: 'Bebas Neue', sans-serif; font-size: 60px;
+  color: rgba(0,0,0,0.04); line-height: 1;
+}
+.preview-a .overline { font-size: 8px; letter-spacing: 3px; text-transform: uppercase; color: #ff6b35; font-family: 'DM Sans', sans-serif; font-weight: 600; margin-bottom: 8px; }
+.preview-a .big-name { font-family: 'Bebas Neue', sans-serif; font-size: 46px; line-height: 0.9; color: #1a1610; letter-spacing: 2px; }
+.preview-a .italic-name { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 32px; color: #ff6b35; display: block; }
+.preview-a .sub { font-size: 9px; color: #9a8a78; letter-spacing: 1px; text-transform: uppercase; margin-top: 10px; }
+
+/* Option B: Clean White */
+.preview-b {
+  background: #ffffff;
+  border-bottom: 1px solid #e5e5e5;
+}
+.preview-b .top-bar { position: absolute; top: 0; left: 0; right: 0; height: 2px; background: #ff6b35; }
+.preview-b .side-num {
+  position: absolute; top: 20px; left: 20px;
+  font-family: 'Bebas Neue', sans-serif; font-size: 60px;
+  color: rgba(0,0,0,0.04); line-height: 1;
+}
+.preview-b .overline { font-size: 8px; letter-spacing: 3px; text-transform: uppercase; color: #ff6b35; font-family: 'DM Sans', sans-serif; font-weight: 600; margin-bottom: 8px; }
+.preview-b .big-name { font-family: 'Bebas Neue', sans-serif; font-size: 46px; line-height: 0.9; color: #111111; letter-spacing: 2px; }
+.preview-b .italic-name { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 32px; color: #ff6b35; display: block; }
+.preview-b .sub { font-size: 9px; color: #999; letter-spacing: 1px; text-transform: uppercase; margin-top: 10px; }
+
+.card-info { padding: 14px 16px 16px; background: white; }
+.card-info.warm { background: #faf6ef; }
+.card-info h3 { font-size: 14px; font-weight: 700; margin-bottom: 4px; color: #111; }
+.card-info p { font-size: 11px; color: #666; line-height: 1.5; }
+.palette { display: flex; gap: 6px; margin-top: 8px; }
+.swatch { width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
+</style>
+
+<div class="split">
+
+  <div class="lm-card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="preview preview-a">
+      <div class="top-bar"></div>
+      <div class="side-num">EA</div>
+      <div class="overline">Full-Stack Developer</div>
+      <div class="big-name">ESTEBAN<br><span class="italic-name">Acuña</span></div>
+      <div class="sub">Building digital experiences</div>
+    </div>
+    <div class="card-info warm">
+      <h3>A — Magazine Paper</h3>
+      <p>Warm off-white (#faf6ef) — like printed editorial paper. Feels crafted and organic. Pairs with the warm dark mode naturally.</p>
+      <div class="palette">
+        <div class="swatch" style="background:#faf6ef"></div>
+        <div class="swatch" style="background:#ff6b35"></div>
+        <div class="swatch" style="background:#1a1610"></div>
+        <div class="swatch" style="background:#9a8a78"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lm-card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="preview preview-b">
+      <div class="top-bar"></div>
+      <div class="side-num">EA</div>
+      <div class="overline">Full-Stack Developer</div>
+      <div class="big-name">ESTEBAN<br><span class="italic-name">Acuña</span></div>
+      <div class="sub">Building digital experiences</div>
+    </div>
+    <div class="card-info">
+      <h3>B — Clean White</h3>
+      <p>Pure white (#ffffff) with sharp contrast. Crisp and modern. The orange pops harder against white. Maximum contrast ratio.</p>
+      <div class="palette">
+        <div class="swatch" style="background:#ffffff;border-color:#ddd"></div>
+        <div class="swatch" style="background:#ff6b35"></div>
+        <div class="swatch" style="background:#111111"></div>
+        <div class="swatch" style="background:#999"></div>
+      </div>
+    </div>
+  </div>
+
+</div>

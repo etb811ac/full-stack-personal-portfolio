@@ -109,6 +109,8 @@ html {
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
 }
 
 body {
@@ -183,7 +185,7 @@ a {
   display: flex;
   flex-direction: row;
   align-items: stretch;
-  max-width: 1200px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 0 var(--space-xl);
   width: 100%;

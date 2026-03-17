@@ -1,0 +1,5 @@
+{"type":"server-started","port":54430,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:54430","screen_dir":"/Users/estebanacuna/Sites/full-stack-personal-portfolio/.superpowers/brainstorm/52080-1773690203"}
+{"type":"screen-added","file":"/Users/estebanacuna/Sites/full-stack-personal-portfolio/.superpowers/brainstorm/52080-1773690203/scene-direction.html"}
+{"type":"screen-added","file":"/Users/estebanacuna/Sites/full-stack-personal-portfolio/.superpowers/brainstorm/52080-1773690203/hero-layout.html"}
+{"type":"screen-added","file":"/Users/estebanacuna/Sites/full-stack-personal-portfolio/.superpowers/brainstorm/52080-1773690203/full-design.html"}
+{"type":"server-stopped","reason":"idle timeout"}

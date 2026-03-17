@@ -1,0 +1,206 @@
+<h2>3D Scene Direction</h2>
+<p class="subtitle">What should the overall vibe of the scenes feel like? Pick the direction that resonates most.</p>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;600&display=swap');
+
+.grid-4 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px; }
+
+.dir-card {
+  border-radius: 8px; overflow: hidden; cursor: pointer;
+  border: 2px solid transparent; transition: all 0.2s;
+  position: relative;
+}
+.dir-card:hover { transform: translateY(-2px); }
+.dir-card.selected { border-color: #ff6b35; box-shadow: 0 0 0 3px rgba(255,107,53,0.25); }
+.dir-card.selected::after {
+  content: '✓'; position: absolute; top: 8px; right: 8px;
+  background: #ff6b35; color: white;
+  width: 22px; height: 22px; border-radius: 50%;
+  display: grid; place-items: center; font-size: 12px; font-weight: 700;
+}
+
+.scene-preview {
+  height: 180px;
+  position: relative;
+  overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* Option A: Fluid Shader */
+.scene-a {
+  background: #0d0d0d;
+}
+.scene-a::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 30% 60%, rgba(255,107,53,0.4) 0%, transparent 55%),
+              radial-gradient(ellipse at 70% 40%, rgba(100,20,0,0.5) 0%, transparent 50%),
+              radial-gradient(ellipse at 50% 80%, rgba(255,140,90,0.2) 0%, transparent 40%);
+  animation: fluid-shift 4s ease-in-out infinite alternate;
+}
+@keyframes fluid-shift {
+  from { opacity: 0.7; transform: scale(1) rotate(0deg); }
+  to { opacity: 1; transform: scale(1.05) rotate(2deg); }
+}
+.scene-a .particles {
+  position: absolute;
+  width: 100%; height: 100%;
+}
+.scene-a .p {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 107, 53, 0.7);
+  animation: drift 3s ease-in-out infinite;
+}
+.scene-a .label-overlay { color: #ff6b35; font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 3px; z-index: 2; position: relative; text-shadow: 0 0 20px rgba(255,107,53,0.8); }
+
+/* Option B: Blueprint Wireframe */
+.scene-b {
+  background: #080c14;
+}
+.scene-b::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(255,107,53,0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,107,53,0.08) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+.wf-shape {
+  position: relative; z-index: 2;
+  width: 100px; height: 100px;
+  border: 1px solid rgba(255,107,53,0.7);
+  transform: perspective(200px) rotateX(20deg) rotateY(20deg);
+  box-shadow: 0 0 15px rgba(255,107,53,0.3), inset 0 0 15px rgba(255,107,53,0.05);
+}
+.wf-shape::before, .wf-shape::after {
+  content: '';
+  position: absolute; inset: -20px;
+  border: 1px solid rgba(255,107,53,0.25);
+  transform: rotate(45deg);
+}
+.wf-label { position: absolute; bottom: 8px; left: 12px; font-size: 9px; letter-spacing: 2px; color: rgba(255,107,53,0.6); font-family: monospace; text-transform: uppercase; }
+
+/* Option C: Organic Morphing */
+.scene-c {
+  background: #0d0d0d;
+}
+.blob {
+  position: relative; z-index: 2;
+  width: 120px; height: 120px;
+  background: radial-gradient(circle at 40% 35%, #ff8c5a, #ff6b35 40%, #cc5528 75%, #3a1000);
+  border-radius: 60% 40% 70% 30% / 50% 60% 40% 70%;
+  animation: morph 4s ease-in-out infinite;
+  box-shadow: 0 0 40px rgba(255,107,53,0.4), 0 0 80px rgba(255,107,53,0.15);
+}
+@keyframes morph {
+  0%   { border-radius: 60% 40% 70% 30% / 50% 60% 40% 70%; }
+  33%  { border-radius: 40% 60% 30% 70% / 60% 40% 70% 30%; }
+  66%  { border-radius: 70% 30% 50% 50% / 30% 70% 60% 40%; }
+  100% { border-radius: 60% 40% 70% 30% / 50% 60% 40% 70%; }
+}
+.scene-c .wf-label { bottom: 8px; left: 12px; }
+
+/* Option D: Neural Network / Constellation */
+.scene-d {
+  background: #0d0d0d;
+}
+.net-svg {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+}
+
+.card-info {
+  padding: 14px 16px 16px;
+  background: #111;
+  border-top: 1px solid #1f1f1f;
+}
+.card-info h3 { font-size: 14px; font-weight: 700; margin-bottom: 4px; color: #f5f5f5; font-family: 'DM Sans', sans-serif; }
+.card-info p { font-size: 11px; color: #888; line-height: 1.5; font-family: 'DM Sans', sans-serif; }
+.tag { display: inline-block; font-size: 9px; letter-spacing: 1.5px; padding: 2px 6px; background: rgba(255,107,53,0.12); color: #ff6b35; border: 1px solid rgba(255,107,53,0.3); border-radius: 2px; margin-top: 6px; text-transform: uppercase; font-family: monospace; }
+</style>
+
+<div class="grid-4">
+
+  <!-- A: Fluid / Shader -->
+  <div class="dir-card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="scene-preview scene-a">
+      <div class="particles">
+        <div class="p" style="width:6px;height:6px;top:20%;left:15%;animation-delay:0s;animation-duration:2.5s"></div>
+        <div class="p" style="width:4px;height:4px;top:60%;left:70%;animation-delay:0.8s;animation-duration:3.2s"></div>
+        <div class="p" style="width:8px;height:8px;top:40%;left:45%;animation-delay:1.5s;animation-duration:2s"></div>
+        <div class="p" style="width:3px;height:3px;top:75%;left:25%;animation-delay:0.3s;animation-duration:4s"></div>
+        <div class="p" style="width:5px;height:5px;top:30%;left:80%;animation-delay:2s;animation-duration:3s"></div>
+      </div>
+      <div class="label-overlay">PLASMA</div>
+    </div>
+    <div class="card-info">
+      <h3>A — Fluid Shader</h3>
+      <p>GLSL vertex/fragment shaders. Animated plasma fields, morphing wave surfaces, volumetric light scattering. Feels alive and otherworldly.</p>
+      <span class="tag">High Impact</span>
+    </div>
+  </div>
+
+  <!-- B: Blueprint Wireframe -->
+  <div class="dir-card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="scene-preview scene-b">
+      <div class="wf-shape"></div>
+      <div class="wf-label">X: 0.00  Y: 0.00  Z: 0.00</div>
+    </div>
+    <div class="card-info">
+      <h3>B — Technical Blueprint</h3>
+      <p>Architectural precision. Grid-space wireframes, orthographic projections that twist into perspective, CAD-style annotations, circuit traces.</p>
+      <span class="tag">Matches Theme</span>
+    </div>
+  </div>
+
+  <!-- C: Organic Morphing -->
+  <div class="dir-card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="scene-preview scene-c">
+      <div class="blob"></div>
+      <div class="wf-label" style="position:absolute;bottom:8px;left:12px;font-size:9px;letter-spacing:2px;color:rgba(255,107,53,0.6);font-family:monospace;text-transform:uppercase;">noise displacement</div>
+    </div>
+    <div class="card-info">
+      <h3>C — Organic Morphing</h3>
+      <p>Perlin noise-driven blob meshes, metaballs, SDF-based morphing. Fluid, biological, sculptural. Feels crafted, not mechanical.</p>
+      <span class="tag">Distinctive</span>
+    </div>
+  </div>
+
+  <!-- D: Network Constellation -->
+  <div class="dir-card" data-choice="d" onclick="toggleSelect(this)">
+    <div class="scene-preview scene-d">
+      <svg class="net-svg" viewBox="0 0 300 180">
+        <!-- nodes -->
+        <circle cx="80" cy="50" r="5" fill="#ff6b35" opacity="0.9"/>
+        <circle cx="180" cy="40" r="4" fill="#ff6b35" opacity="0.7"/>
+        <circle cx="240" cy="90" r="6" fill="#ff6b35" opacity="1"/>
+        <circle cx="150" cy="130" r="4" fill="#ff8c5a" opacity="0.8"/>
+        <circle cx="60" cy="130" r="3" fill="#ff6b35" opacity="0.6"/>
+        <circle cx="220" cy="150" r="3" fill="#cc5528" opacity="0.7"/>
+        <circle cx="120" cy="80" r="5" fill="#ff6b35" opacity="0.9"/>
+        <circle cx="30" cy="80" r="3" fill="#ff8c5a" opacity="0.5"/>
+        <!-- edges -->
+        <line x1="80" y1="50" x2="180" y2="40" stroke="rgba(255,107,53,0.3)" stroke-width="1"/>
+        <line x1="180" y1="40" x2="240" y2="90" stroke="rgba(255,107,53,0.4)" stroke-width="1"/>
+        <line x1="240" y1="90" x2="150" y2="130" stroke="rgba(255,107,53,0.3)" stroke-width="1"/>
+        <line x1="150" y1="130" x2="60" y2="130" stroke="rgba(255,107,53,0.25)" stroke-width="1"/>
+        <line x1="80" y1="50" x2="120" y2="80" stroke="rgba(255,107,53,0.4)" stroke-width="1.5"/>
+        <line x1="120" y1="80" x2="150" y2="130" stroke="rgba(255,107,53,0.3)" stroke-width="1"/>
+        <line x1="120" y1="80" x2="240" y2="90" stroke="rgba(255,107,53,0.2)" stroke-width="1"/>
+        <line x1="60" y1="130" x2="30" y2="80" stroke="rgba(255,107,53,0.2)" stroke-width="1"/>
+        <line x1="30" y1="80" x2="80" y2="50" stroke="rgba(255,107,53,0.25)" stroke-width="1"/>
+        <line x1="150" y1="130" x2="220" y2="150" stroke="rgba(255,107,53,0.3)" stroke-width="1"/>
+        <!-- pulse ring -->
+        <circle cx="120" cy="80" r="12" fill="none" stroke="rgba(255,107,53,0.2)" stroke-width="1"/>
+        <circle cx="240" cy="90" r="14" fill="none" stroke="rgba(255,107,53,0.15)" stroke-width="1"/>
+      </svg>
+    </div>
+    <div class="card-info">
+      <h3>D — Network / Constellation</h3>
+      <p>Force-directed graphs, particle networks that coalesce into shapes, neural-net topology. Communicates interconnectedness and data thinking.</p>
+      <span class="tag">Dev Narrative</span>
+    </div>
+  </div>
+
+</div>
