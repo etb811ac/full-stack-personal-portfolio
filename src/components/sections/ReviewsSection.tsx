@@ -1,25 +1,22 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import Image from 'next/image';
 
 const reviews = [
   {
-    text: "Esteban delivered an exceptional product that exceeded our expectations. His ability to combine creative frontend work with solid backend architecture is rare and incredibly valuable.",
-    initials: 'JD',
-    name: 'Jane Doe',
-    role: 'CEO, TechStartup Inc.',
+    text: "Esteban is not only extremely talented at his craft, he's also committed to making sure every project hits a high bar of quality and excellence. He has an eye for detail and drive to innovate, and the ability to stay positive and collaborate even during challenging projects. Esteban will be a true asset in helping you bring your vision to life.",
+    initials: 'DH',
+    name: 'Danielle Hart',
+    role: 'CEO, Sweetrush',
+    photo: '/Danielle.avif',
   },
   {
-    text: "Working with Esteban was a game-changer. He didn't just write code — he understood the problem deeply and came up with solutions we hadn't even considered. True problem-solver mentality.",
-    initials: 'AS',
-    name: 'Alex Smith',
-    role: 'Product Lead, DesignCo',
-  },
-  {
-    text: "The 3D interactions and animations Esteban built for our site were stunning. Fast, responsive, and buttery smooth. He has a real eye for creative tech that most developers lack.",
-    initials: 'MR',
-    name: 'Maria Rodriguez',
-    role: 'Creative Director, Agency X',
+    text: "Working with Esteban was great. He's someone you can trust to take a task and run with it without needing constant follow-up. He cares about doing things well, not just getting them done, and that shows in his work. Super easy to collaborate with and always open to feedback.",
+    initials: 'EH',
+    name: 'Emanuel Hernandez',
+    role: 'CTO, Skillful AI',
+    photo: '/Emanuel.jpg',
   },
 ];
 
@@ -93,87 +90,91 @@ export default function ReviewsSection() {
             </p>
           </div>
 
-          <div className="reviews-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3" style={{ gap: 'var(--space-lg)' }}>
+          <div
+            className="reviews-grid grid grid-cols-1 md:grid-cols-2"
+            style={{ gap: 'var(--space-xl)', maxWidth: '960px', margin: '0 auto' }}
+          >
             {reviews.map((review, i) => (
               <div
                 key={i}
-                className="review-card card-editorial relative transition-all duration-400 hover:-translate-y-1"
+                className="review-card relative flex flex-col cursor-default"
                 style={{
-                  padding: 'var(--space-xl)',
-                  transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
+                  padding: 'var(--space-2xl)',
+                  background: 'var(--bg-secondary)',
+                  border: '1px solid var(--border)',
+                  borderLeft: '3px solid var(--accent)',
+                  transition: 'box-shadow 200ms cubic-bezier(0.16, 1, 0.3, 1), background 200ms cubic-bezier(0.16, 1, 0.3, 1)',
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.boxShadow = 'var(--shadow-md)';
-                  e.currentTarget.style.borderColor = 'var(--border-accent)';
+                  e.currentTarget.style.background = 'var(--bg-tertiary)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.boxShadow = '';
-                  e.currentTarget.style.borderColor = 'var(--border)';
+                  e.currentTarget.style.background = 'var(--bg-secondary)';
                 }}
               >
-                {/* Stars */}
-                <div
-                  className="absolute"
-                  style={{
-                    top: 'var(--space-2xl)',
-                    right: 'var(--space-2xl)',
-                    color: '#f59e0b',
-                    fontSize: '0.875rem',
-                    letterSpacing: '2px',
-                  }}
-                >
-                  ★★★★★
-                </div>
-
-                {/* Quote mark */}
+                {/* Large decorative quote */}
                 <span
+                  aria-hidden="true"
                   style={{
                     fontFamily: 'var(--font-accent)',
                     fontStyle: 'italic',
-                    fontSize: '4rem',
+                    fontSize: '5rem',
                     lineHeight: '1',
                     color: 'var(--accent)',
+                    opacity: 0.5,
                     display: 'block',
                     marginBottom: 'var(--space-sm)',
+                    userSelect: 'none',
                   }}
                 >&ldquo;</span>
 
-                {/* Text */}
+                {/* Quote text */}
                 <p
                   style={{
-                    fontSize: '1rem',
+                    fontSize: '1.0625rem',
                     color: 'var(--text-secondary)',
-                    lineHeight: 1.8,
-                    marginBottom: 'var(--space-xl)',
+                    lineHeight: 1.85,
                     fontStyle: 'italic',
+                    flex: 1,
+                    marginBottom: 'var(--space-2xl)',
                   }}
                 >
                   {review.text}
                 </p>
 
+                {/* Divider */}
+                <div style={{ height: '1px', background: 'var(--border)', marginBottom: 'var(--space-xl)' }} />
+
                 {/* Author */}
                 <div className="flex items-center" style={{ gap: 'var(--space-md)' }}>
                   <div
-                    className="flex items-center justify-center shrink-0"
-                    style={{
-                      width: '44px',
-                      height: '44px',
-                      borderRadius: '50%',
-                      background: 'var(--bg-hover)',
-                      border: '1px solid var(--border)',
-                      fontFamily: 'var(--font-display)',
-                      fontWeight: 600,
-                      fontSize: '0.875rem',
-                      color: 'var(--text-tertiary)',
-                    }}
+                    className="shrink-0 overflow-hidden"
+                    style={{ width: '44px', height: '44px', borderRadius: '50%', border: '2px solid var(--border-accent)' }}
                   >
-                    {review.initials}
+                    <Image
+                      src={review.photo}
+                      alt={review.name}
+                      width={44}
+                      height={44}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
                   </div>
                   <div>
-                    <div className="font-semibold text-sm" style={{ fontFamily: 'var(--font-display)' }}>
+                    <div
+                      style={{
+                        fontFamily: 'var(--font-display)',
+                        fontWeight: 700,
+                        fontSize: '0.9rem',
+                        letterSpacing: '0.05em',
+                        color: 'var(--text-primary)',
+                        textTransform: 'uppercase',
+                      }}
+                    >
                       {review.name}
                     </div>
-                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>
+                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--accent)', letterSpacing: '0.08em' }}>
                       {review.role}
                     </div>
                   </div>

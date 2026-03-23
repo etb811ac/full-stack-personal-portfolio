@@ -193,8 +193,8 @@ export default function HeroSection() {
                   marginBottom: 'var(--space-2xl)',
                 }}
               >
-                I build digital experiences where code meets craft. From pixel-perfect interfaces to robust backends —
-                and everything in between, including the furniture I sit on while coding.
+                Digital experiences built where code meets craft — from pixel-perfect interfaces to robust backends,
+                and everything in between.
               </p>
 
               {/* CTA Buttons */}

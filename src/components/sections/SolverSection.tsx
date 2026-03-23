@@ -105,7 +105,7 @@ export default function SolverSection() {
                 className="solver-reveal opacity-0 editorial-heading"
                 style={{ fontSize: 'clamp(2rem, 4vw, 3.5rem)', marginBottom: 'var(--space-xl)' }}
               >
-                <span className="display-word">I&apos;M A PROBLEM</span>
+                <span className="display-word">A PROBLEM</span>
                 <em className="accent-word" style={{ fontSize: '0.85em' }}>solver</em>
                 <span className="display-word">BY NATURE</span>
               </h2>
