@@ -437,17 +437,3 @@ a {
   background: var(--text-tertiary);
 }
 
-/* ============================================
-   THEME TRANSITION
-   ============================================ */
-html.theme-transitioning .theme-toggle-icon {
-  transition: transform var(--duration-slow) var(--ease-out-expo) !important;
-}
-
-html.theme-transitioning .sun-icon {
-  transform: rotate(180deg);
-}
-
-html.theme-transitioning .moon-icon {
-  transform: rotate(-180deg);
-}
