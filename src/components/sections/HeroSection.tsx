@@ -259,6 +259,31 @@ export default function HeroSection() {
           50% { opacity: 0.3; transform: scaleY(0.5); }
           100% { opacity: 1; transform: scaleY(1); }
         }
+
+        /* Name responsive sizes */
+        .hero-name-display { font-size: clamp(5rem, 11vw, 9.5rem); }
+        .hero-name-accent  { font-size: clamp(4.5rem, 10vw, 8.5rem); }
+
+        @media (max-width: 1024px) {
+          .hero-name-display { font-size: clamp(4rem, 9vw, 7rem); }
+          .hero-name-accent  { font-size: clamp(3.5rem, 8vw, 6.2rem); }
+          .hero-left-vignette { width: 35%; }
+        }
+        @media (max-width: 767px) {
+          .hero-name-display { font-size: clamp(3rem, 13vw, 4.5rem); }
+          .hero-name-accent  { font-size: clamp(2.5rem, 12vw, 4rem); }
+          .hero-left-vignette { display: none; }
+        }
+
+        /* Mobile overlay — hidden on tablet/desktop, visible on mobile */
+        .hero-mobile-overlay { display: none; }
+        @media (max-width: 767px) { .hero-mobile-overlay { display: block; } }
+
+        /* Reduced motion — elements visible immediately, no transforms */
+        @media (prefers-reduced-motion: reduce) {
+          .hero-animate { opacity: 1 !important; transform: none !important; }
+          .hero-3d-container { opacity: 1 !important; }
+        }
       `}</style>
     </section>
   );
