@@ -33,8 +33,22 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://estebanacuna.dev'),
   title: 'Esteban Acuña — Full-Stack Developer & Maker',
   description: 'Full-stack developer specializing in Next.js, React, Three.js, Python, and AI integration. Building digital experiences where code meets craft.',
+  openGraph: {
+    title: 'Esteban Acuña — Full-Stack Developer & Maker',
+    description: 'Full-stack developer specializing in Next.js, React, Three.js, Python, and AI integration. Building digital experiences where code meets craft.',
+    url: 'https://estebanacuna.dev',
+    siteName: 'Esteban Acuña',
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Esteban Acuña — Full-Stack Developer & Maker',
+    description: 'Full-stack developer specializing in Next.js, React, Three.js, Python, and AI integration. Building digital experiences where code meets craft.',
+  },
 };
 
 export default function RootLayout({
