@@ -95,16 +95,29 @@ export default function HeroSection() {
         <HeroScene />
       </div>
 
-      {/* Gradient fade mask: outside max-width wrapper, viewport-relative */}
+      {/* Left vignette — soft 30% desktop, 35% tablet, lets 3D breathe */}
       <div
+        className="hero-left-vignette"
         style={{
           position: 'absolute',
           left: 0,
           top: 0,
-          height: 'calc(100vh - 80px)',
-          width: '55vw',
-          background: 'linear-gradient(90deg, rgba(var(--bg-primary-rgb), 1) 0%, rgba(var(--bg-primary-rgb), 1) 35%, rgba(var(--bg-primary-rgb), 0.75) 60%, transparent 100%)',
+          height: '100%',
+          width: '30%',
+          background: 'linear-gradient(90deg, rgba(var(--bg-primary-rgb), 0.92) 0%, rgba(var(--bg-primary-rgb), 0.60) 55%, transparent 100%)',
           zIndex: 1,
+          pointerEvents: 'none',
+        }}
+      />
+
+      {/* Mobile overlay — full dark wash for legibility on small screens */}
+      <div
+        className="hero-mobile-overlay"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'rgba(var(--bg-primary-rgb), 0.60)',
+          zIndex: 2,
           pointerEvents: 'none',
         }}
       />
