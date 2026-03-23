@@ -70,7 +70,14 @@ export default function HeroSection() {
     <section
       ref={sectionRef}
       id="hero"
-      style={{ background: 'var(--gradient-hero)', minHeight: '100vh', paddingTop: '80px', position: 'relative' }}
+      style={{
+        background: 'var(--gradient-hero)',
+        minHeight: '100vh',
+        paddingTop: '80px',
+        position: 'relative',
+        display: 'flex',
+        alignItems: 'center',
+      }}
     >
       {/* Bottom gradient fade */}
       <div
@@ -139,7 +146,7 @@ export default function HeroSection() {
             {/* Left: Content */}
             <div className="z-[2] relative">
               {/* Status badge */}
-              <div className="hero-animate opacity-0" style={{ marginBottom: 'var(--space-lg)' }}>
+              <div className="hero-animate opacity-0" style={{ marginBottom: 'var(--space-xl)' }}>
                 <div style={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -159,21 +166,19 @@ export default function HeroSection() {
               {/* Name treatment */}
               <h1
                 className="hero-animate opacity-0"
-                style={{ lineHeight: '0.9', marginBottom: 'var(--space-lg)' }}
+                style={{ lineHeight: '0.88', marginBottom: 'var(--space-xl)' }}
               >
-                <span style={{
+                <span className="hero-name-display" style={{
                   fontFamily: 'var(--font-display)',
-                  fontSize: 'clamp(3.5rem, 8vw, 7rem)',
                   letterSpacing: '0.02em',
                   color: 'var(--text-primary)',
                   display: 'block',
                 }}>
                   ESTEBAN
                 </span>
-                <em style={{
+                <em className="hero-name-accent" style={{
                   fontFamily: 'var(--font-accent)',
                   fontStyle: 'italic',
-                  fontSize: 'clamp(3rem, 7vw, 6.2rem)',
                   color: 'var(--accent)',
                   display: 'block',
                 }}>
@@ -189,7 +194,7 @@ export default function HeroSection() {
                   fontSize: '0.875rem',
                   letterSpacing: '2px',
                   color: 'var(--text-tertiary)',
-                  marginBottom: 'var(--space-xl)',
+                  marginBottom: 'var(--space-lg)',
                 }}
               >
                 // Full-Stack Developer
@@ -204,7 +209,7 @@ export default function HeroSection() {
                   color: 'var(--text-secondary)',
                   maxWidth: '480px',
                   lineHeight: 1.7,
-                  marginBottom: 'var(--space-2xl)',
+                  marginBottom: 'var(--space-lg)',
                 }}
               >
                 Digital experiences built where code meets craft — from pixel-perfect interfaces to robust backends,
