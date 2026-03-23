@@ -83,11 +83,12 @@ export default function HeroSection() {
         className="hero-3d-container opacity-0"
         style={{
           position: 'absolute',
-          right: 0,
           top: 0,
-          height: 'calc(100vh - 80px)',
-          minHeight: '600px',
-          width: '70vw',
+          right: 0,
+          bottom: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
           zIndex: 0,
         }}
       >
