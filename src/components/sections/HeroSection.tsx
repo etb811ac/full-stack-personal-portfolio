@@ -23,6 +23,10 @@ export default function HeroSection() {
   useEffect(() => {
     // GSAP animations
     const loadGSAP = async () => {
+      // Respect reduced motion — CSS already shows elements; skip all JS animation
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (prefersReducedMotion) return;
+
       const gsap = (await import('gsap')).default;
       const { ScrollTrigger } = await import('gsap/ScrollTrigger');
       gsap.registerPlugin(ScrollTrigger);
@@ -30,30 +34,30 @@ export default function HeroSection() {
       const el = sectionRef.current;
       if (!el) return;
 
-      // Hero content reveal
-      gsap.fromTo(
-        el.querySelectorAll('.hero-animate'),
-        { y: 60, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 1.2,
-          ease: 'expo.out',
-          stagger: 0.1,
-          delay: 0.3,
-        }
-      );
-
-      // Hero 3D reveal
+      // 3D scene breathes in — opacity only, no slide
       gsap.fromTo(
         el.querySelector('.hero-3d-container'),
-        { x: 80, opacity: 0 },
-        { x: 0, opacity: 1, duration: 1.4, ease: 'expo.out', delay: 0.5 }
+        { opacity: 0 },
+        { opacity: 1, duration: 1.8, ease: 'power2.out', delay: 0.2 }
       );
 
-      // Parallax on scroll
+      // Text stagger entrance
+      gsap.fromTo(
+        el.querySelectorAll('.hero-animate'),
+        { y: 40, opacity: 0 },
+        { y: 0, opacity: 1, duration: 1.4, ease: 'expo.out', stagger: 0.1, delay: 0.3 }
+      );
+
+      // Name letter-spacing cinematic settle (ESTEBAN only — italics don't benefit)
+      gsap.fromTo(
+        el.querySelector('.hero-name-display'),
+        { letterSpacing: '0.08em' },
+        { letterSpacing: '0.02em', duration: 1.4, ease: 'expo.out', delay: 0.3 }
+      );
+
+      // Deeper parallax on scroll
       gsap.to(el.querySelector('.hero-3d-container'), {
-        y: -60,
+        y: -120,
         scrollTrigger: {
           trigger: el,
           start: 'top top',
@@ -70,7 +74,14 @@ export default function HeroSection() {
     <section
       ref={sectionRef}
       id="hero"
-      style={{ background: 'var(--gradient-hero)', minHeight: '100vh', paddingTop: '80px', position: 'relative' }}
+      style={{
+        background: 'var(--gradient-hero)',
+        minHeight: '100vh',
+        paddingTop: '80px',
+        position: 'relative',
+        display: 'flex',
+        alignItems: 'center',
+      }}
     >
       {/* Bottom gradient fade */}
       <div
@@ -83,27 +94,41 @@ export default function HeroSection() {
         className="hero-3d-container opacity-0"
         style={{
           position: 'absolute',
-          right: 0,
           top: 0,
-          height: 'calc(100vh - 80px)',
-          minHeight: '600px',
-          width: '70vw',
+          right: 0,
+          bottom: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
           zIndex: 0,
         }}
       >
         <HeroScene />
       </div>
 
-      {/* Gradient fade mask: outside max-width wrapper, viewport-relative */}
+      {/* Left vignette — soft 30% desktop, 35% tablet, lets 3D breathe */}
       <div
+        className="hero-left-vignette"
         style={{
           position: 'absolute',
           left: 0,
           top: 0,
-          height: 'calc(100vh - 80px)',
-          width: '55vw',
-          background: 'linear-gradient(90deg, rgba(var(--bg-primary-rgb), 1) 0%, rgba(var(--bg-primary-rgb), 1) 35%, rgba(var(--bg-primary-rgb), 0.75) 60%, transparent 100%)',
+          height: '100%',
+          width: '30%',
+          background: 'linear-gradient(90deg, rgba(var(--bg-primary-rgb), 0.92) 0%, rgba(var(--bg-primary-rgb), 0.60) 55%, transparent 100%)',
           zIndex: 1,
+          pointerEvents: 'none',
+        }}
+      />
+
+      {/* Mobile overlay — full dark wash for legibility on small screens */}
+      <div
+        className="hero-mobile-overlay"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'rgba(var(--bg-primary-rgb), 0.60)',
+          zIndex: 2,
           pointerEvents: 'none',
         }}
       />
@@ -125,7 +150,7 @@ export default function HeroSection() {
             {/* Left: Content */}
             <div className="z-[2] relative">
               {/* Status badge */}
-              <div className="hero-animate opacity-0" style={{ marginBottom: 'var(--space-lg)' }}>
+              <div className="hero-animate opacity-0" style={{ marginBottom: 'var(--space-xl)' }}>
                 <div style={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -145,21 +170,19 @@ export default function HeroSection() {
               {/* Name treatment */}
               <h1
                 className="hero-animate opacity-0"
-                style={{ lineHeight: '0.9', marginBottom: 'var(--space-lg)' }}
+                style={{ lineHeight: '0.88', marginBottom: 'var(--space-xl)' }}
               >
-                <span style={{
+                <span className="hero-name-display" style={{
                   fontFamily: 'var(--font-display)',
-                  fontSize: 'clamp(3.5rem, 8vw, 7rem)',
                   letterSpacing: '0.02em',
                   color: 'var(--text-primary)',
                   display: 'block',
                 }}>
                   ESTEBAN
                 </span>
-                <em style={{
+                <em className="hero-name-accent" style={{
                   fontFamily: 'var(--font-accent)',
                   fontStyle: 'italic',
-                  fontSize: 'clamp(3rem, 7vw, 6.2rem)',
                   color: 'var(--accent)',
                   display: 'block',
                 }}>
@@ -175,7 +198,7 @@ export default function HeroSection() {
                   fontSize: '0.875rem',
                   letterSpacing: '2px',
                   color: 'var(--text-tertiary)',
-                  marginBottom: 'var(--space-xl)',
+                  marginBottom: 'var(--space-lg)',
                 }}
               >
                 // Full-Stack Developer
@@ -190,7 +213,7 @@ export default function HeroSection() {
                   color: 'var(--text-secondary)',
                   maxWidth: '480px',
                   lineHeight: 1.7,
-                  marginBottom: 'var(--space-2xl)',
+                  marginBottom: 'var(--space-lg)',
                 }}
               >
                 Digital experiences built where code meets craft — from pixel-perfect interfaces to robust backends,
@@ -239,6 +262,31 @@ export default function HeroSection() {
           0% { opacity: 1; transform: scaleY(1); }
           50% { opacity: 0.3; transform: scaleY(0.5); }
           100% { opacity: 1; transform: scaleY(1); }
+        }
+
+        /* Name responsive sizes */
+        .hero-name-display { font-size: clamp(5rem, 11vw, 9.5rem); }
+        .hero-name-accent  { font-size: clamp(4.5rem, 10vw, 8.5rem); }
+
+        @media (max-width: 1024px) {
+          .hero-name-display { font-size: clamp(4rem, 9vw, 7rem); }
+          .hero-name-accent  { font-size: clamp(3.5rem, 8vw, 6.2rem); }
+          .hero-left-vignette { width: 35%; }
+        }
+        @media (max-width: 767px) {
+          .hero-name-display { font-size: clamp(3rem, 13vw, 4.5rem); }
+          .hero-name-accent  { font-size: clamp(2.5rem, 12vw, 4rem); }
+          .hero-left-vignette { display: none; }
+        }
+
+        /* Mobile overlay — hidden on tablet/desktop, visible on mobile */
+        .hero-mobile-overlay { display: none; }
+        @media (max-width: 767px) { .hero-mobile-overlay { display: block; } }
+
+        /* Reduced motion — elements visible immediately, no transforms */
+        @media (prefers-reduced-motion: reduce) {
+          .hero-animate { opacity: 1 !important; transform: none !important; }
+          .hero-3d-container { opacity: 1 !important; }
         }
       `}</style>
     </section>
