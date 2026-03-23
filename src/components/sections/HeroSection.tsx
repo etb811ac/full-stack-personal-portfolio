@@ -23,6 +23,10 @@ export default function HeroSection() {
   useEffect(() => {
     // GSAP animations
     const loadGSAP = async () => {
+      // Respect reduced motion — CSS already shows elements; skip all JS animation
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (prefersReducedMotion) return;
+
       const gsap = (await import('gsap')).default;
       const { ScrollTrigger } = await import('gsap/ScrollTrigger');
       gsap.registerPlugin(ScrollTrigger);
@@ -30,30 +34,30 @@ export default function HeroSection() {
       const el = sectionRef.current;
       if (!el) return;
 
-      // Hero content reveal
-      gsap.fromTo(
-        el.querySelectorAll('.hero-animate'),
-        { y: 60, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 1.2,
-          ease: 'expo.out',
-          stagger: 0.1,
-          delay: 0.3,
-        }
-      );
-
-      // Hero 3D reveal
+      // 3D scene breathes in — opacity only, no slide
       gsap.fromTo(
         el.querySelector('.hero-3d-container'),
-        { x: 80, opacity: 0 },
-        { x: 0, opacity: 1, duration: 1.4, ease: 'expo.out', delay: 0.5 }
+        { opacity: 0 },
+        { opacity: 1, duration: 1.8, ease: 'power2.out', delay: 0.2 }
       );
 
-      // Parallax on scroll
+      // Text stagger entrance
+      gsap.fromTo(
+        el.querySelectorAll('.hero-animate'),
+        { y: 40, opacity: 0 },
+        { y: 0, opacity: 1, duration: 1.4, ease: 'expo.out', stagger: 0.1, delay: 0.3 }
+      );
+
+      // Name letter-spacing cinematic settle (ESTEBAN only — italics don't benefit)
+      gsap.fromTo(
+        el.querySelector('.hero-name-display'),
+        { letterSpacing: '0.08em' },
+        { letterSpacing: '0.02em', duration: 1.4, ease: 'expo.out', delay: 0.3 }
+      );
+
+      // Deeper parallax on scroll
       gsap.to(el.querySelector('.hero-3d-container'), {
-        y: -60,
+        y: -120,
         scrollTrigger: {
           trigger: el,
           start: 'top top',
