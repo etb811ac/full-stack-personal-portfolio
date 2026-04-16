@@ -136,7 +136,6 @@ export default function WorkSection() {
         .queue-columns {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
-          gap: 0;
           padding: 12px;
           gap: 8px;
         }

@@ -109,7 +109,7 @@ export default function ContactSection() {
         </div>
         <div className="section-divider-line" />
         <div className="section-content-col">
-          <span className="section-overline contact-reveal opacity-0">05 — Contact</span>
+          <span className="section-overline contact-reveal opacity-0">06 — Contact</span>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 items-start" style={{ gap: 'var(--space-4xl)' }}>
             {/* Left: Content */}
