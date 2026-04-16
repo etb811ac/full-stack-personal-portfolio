@@ -1,10 +1,45 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+
+const COLS = [
+  {
+    label: 'Recibido', color: '#818cf8', bg: 'rgba(99,102,241,0.15)', baseCount: 2,
+    cards: [
+      { plate: 'QRS-678', service: 'Lavado Completo', time: '2m' },
+      { plate: 'ABC-123', service: 'Básico', time: '5m' },
+    ],
+  },
+  {
+    label: 'Lavando', color: '#60a5fa', bg: 'rgba(59,130,246,0.15)', baseCount: 1,
+    cards: [{ plate: 'DEF-456', service: 'Encerado', time: '28m' }],
+  },
+  {
+    label: 'Secado', color: '#fbbf24', bg: 'rgba(234,179,8,0.15)', baseCount: 0,
+    cards: [],
+  },
+  {
+    label: 'Listo', color: '#4ade80', bg: 'rgba(34,197,94,0.15)', baseCount: 1,
+    cards: [{ plate: 'MNO-345', service: 'Motor', time: null }],
+  },
+] as const;
 
 export default function WorkSection() {
   const sectionRef = useRef<HTMLElement>(null);
+  const [queueState, setQueueState] = useState({ stage: 0, exiting: false });
+
+  // Cycle the moving card through columns
+  useEffect(() => {
+    let timeout: ReturnType<typeof setTimeout>;
+    const id = setInterval(() => {
+      setQueueState(s => ({ ...s, exiting: true }));
+      timeout = setTimeout(() => {
+        setQueueState(s => ({ stage: (s.stage + 1) % 4, exiting: false }));
+      }, 350);
+    }, 2200);
+    return () => { clearInterval(id); clearTimeout(timeout); };
+  }, []);
 
   useEffect(() => {
     const loadGSAP = async () => {
@@ -182,6 +217,21 @@ export default function WorkSection() {
           float: right;
         }
 
+        @keyframes qmEnter {
+          from { opacity: 0; transform: translateY(-6px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .queue-moving-card {
+          border-color: rgba(255,107,53,0.55);
+          background: rgba(255,107,53,0.07);
+        }
+        .qm-in { animation: qmEnter 0.32s ease both; }
+        .qm-out {
+          opacity: 0;
+          transform: translateY(-6px);
+          transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
         @media (max-width: 900px) {
           .work-card { grid-template-columns: 1fr; }
           .queue-mock { display: none; }
@@ -189,6 +239,7 @@ export default function WorkSection() {
         @media (prefers-reduced-motion: reduce) {
           .work-reveal { opacity: 1 !important; transform: none !important; }
           .work-card { opacity: 1 !important; transform: none !important; }
+          .qm-in, .qm-out { animation: none; transition: none; opacity: 1; transform: none; }
         }
       `}</style>
 
@@ -294,50 +345,34 @@ export default function WorkSection() {
                   <span className="queue-mock-url" style={{ marginLeft: '6px' }}>lavapp.center/queue</span>
                 </div>
                 <div className="queue-columns">
-                  {/* Recibido */}
-                  <div>
-                    <div className="queue-col-header">
-                      <span>Recibido</span>
-                      <span className="queue-col-count" style={{ background: 'rgba(99,102,241,0.15)', color: '#818cf8' }}>2</span>
+                  {COLS.map((col, i) => (
+                    <div key={col.label}>
+                      <div className="queue-col-header">
+                        <span>{col.label}</span>
+                        <span className="queue-col-count" style={{ background: col.bg, color: col.color }}>
+                          {col.baseCount + (queueState.stage === i ? 1 : 0)}
+                        </span>
+                      </div>
+                      {col.cards.map(card => (
+                        <div key={card.plate} className="queue-vehicle-card">
+                          <div className="queue-plate">
+                            {card.plate}
+                            {card.time && <span className="queue-time">{card.time}</span>}
+                          </div>
+                          <div className="queue-service">{card.service}</div>
+                        </div>
+                      ))}
+                      {queueState.stage === i && (
+                        <div className={`queue-vehicle-card queue-moving-card ${queueState.exiting ? 'qm-out' : 'qm-in'}`}>
+                          <div className="queue-plate">
+                            GHI-789
+                            <span className="queue-time" style={{ color: 'var(--accent)' }}>0m</span>
+                          </div>
+                          <div className="queue-service">Premium</div>
+                        </div>
+                      )}
                     </div>
-                    <div className="queue-vehicle-card">
-                      <div className="queue-plate">QRS-678 <span className="queue-time">2m</span></div>
-                      <div className="queue-service">Lavado Completo</div>
-                    </div>
-                    <div className="queue-vehicle-card">
-                      <div className="queue-plate">ABC-123 <span className="queue-time">5m</span></div>
-                      <div className="queue-service">Básico</div>
-                    </div>
-                  </div>
-                  {/* En Lavado */}
-                  <div>
-                    <div className="queue-col-header">
-                      <span>Lavando</span>
-                      <span className="queue-col-count" style={{ background: 'rgba(59,130,246,0.15)', color: '#60a5fa' }}>1</span>
-                    </div>
-                    <div className="queue-vehicle-card">
-                      <div className="queue-plate">DEF-456 <span className="queue-time">28m</span></div>
-                      <div className="queue-service">Encerado</div>
-                    </div>
-                  </div>
-                  {/* Secado */}
-                  <div>
-                    <div className="queue-col-header">
-                      <span>Secado</span>
-                      <span className="queue-col-count" style={{ background: 'rgba(234,179,8,0.15)', color: '#fbbf24' }}>0</span>
-                    </div>
-                  </div>
-                  {/* Listo */}
-                  <div>
-                    <div className="queue-col-header">
-                      <span>Listo</span>
-                      <span className="queue-col-count" style={{ background: 'rgba(34,197,94,0.15)', color: '#4ade80' }}>1</span>
-                    </div>
-                    <div className="queue-vehicle-card">
-                      <div className="queue-plate">MNO-345</div>
-                      <div className="queue-service">Motor</div>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
             </div>

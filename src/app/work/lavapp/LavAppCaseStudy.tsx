@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import Navbar from '@/components/ui/Navbar';
@@ -61,6 +61,56 @@ const DEEP_DIVES = [
   },
 ];
 
+// ── Architecture diagram with sequential node animation ───────────────────────
+
+const ARCH_NODES = [
+  { label: 'Next.js 15', sub: 'App Router',       primary: true  },
+  { label: 'Supabase',   sub: 'PostgreSQL + RLS',  primary: true  },
+  { label: 'Paddle',     sub: 'Billing',            primary: false },
+  { label: 'Anthropic',  sub: 'Claude AI',          primary: false },
+  { label: 'Resend',     sub: 'Email',              primary: false },
+  { label: 'WhatsApp',   sub: 'Notifications',      primary: false },
+];
+
+function ArchDiagram() {
+  const [activeIdx, setActiveIdx] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => setActiveIdx(n => (n + 1) % ARCH_NODES.length), 700);
+    return () => clearInterval(id);
+  }, []);
+
+  const renderRow = (indices: number[], mt?: string) => (
+    <div className="arch-row" style={mt ? { marginTop: mt } : undefined}>
+      {indices.flatMap((ni, pos) => [
+        <div
+          key={ARCH_NODES[ni].label}
+          className={[
+            'arch-node',
+            ARCH_NODES[ni].primary ? 'primary' : '',
+            activeIdx === ni ? 'active' : '',
+          ].filter(Boolean).join(' ')}
+        >
+          {ARCH_NODES[ni].label}
+          <span>{ARCH_NODES[ni].sub}</span>
+        </div>,
+        ...(pos < indices.length - 1
+          ? [<span key={`arr-${ni}`} className={`arch-arrow${activeIdx === ni ? ' active' : ''}`}>→</span>]
+          : []),
+      ])}
+    </div>
+  );
+
+  return (
+    <div className="arch-diagram">
+      {renderRow([0, 1, 2])}
+      {renderRow([3, 4, 5], '8px')}
+    </div>
+  );
+}
+
+// ── Chapters ──────────────────────────────────────────────────────────────────
+
 const CHAPTERS = [
   {
     num: '01',
@@ -97,22 +147,7 @@ const CHAPTERS = [
           and analytics — all enforced at the database level via Supabase Row Level Security policies.
           No custom middleware, no shared-data leaks.
         </p>
-        <div className="arch-diagram">
-          <div className="arch-row">
-            <div className="arch-node primary">Next.js 15<span>App Router</span></div>
-            <span className="arch-arrow">→</span>
-            <div className="arch-node primary">Supabase<span>PostgreSQL + RLS</span></div>
-            <span className="arch-arrow">→</span>
-            <div className="arch-node">Paddle<span>Billing</span></div>
-          </div>
-          <div className="arch-row" style={{ marginTop: '8px' }}>
-            <div className="arch-node">Anthropic<span>Claude AI</span></div>
-            <span className="arch-arrow">→</span>
-            <div className="arch-node">Resend<span>Email</span></div>
-            <span className="arch-arrow">→</span>
-            <div className="arch-node">WhatsApp<span>Notifications</span></div>
-          </div>
-        </div>
+        <ArchDiagram />
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: 'var(--space-xl)' }}>
           {['Next.js 15', 'Supabase', 'TypeScript', 'Tailwind CSS', 'Framer Motion', 'Vitest'].map((t, i) => (
             <span key={t} className={`cs-pill${i < 2 ? ' accent' : ''}`}>{t}</span>
@@ -349,13 +384,25 @@ export default function LavAppCaseStudy() {
           display: flex;
           flex-direction: column;
           gap: 2px;
+          transition: border-color 0.3s ease, color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
         }
         .arch-node span { font-size: 9px; color: var(--text-tertiary); }
         .arch-node.primary {
           border-color: color-mix(in srgb, var(--accent) 35%, transparent);
           color: var(--accent);
         }
-        .arch-arrow { color: var(--border); font-size: 14px; }
+        .arch-node.active {
+          border-color: color-mix(in srgb, var(--accent) 65%, transparent);
+          color: var(--accent);
+          background: color-mix(in srgb, var(--accent) 8%, transparent);
+          box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 14%, transparent);
+        }
+        .arch-arrow {
+          color: var(--border);
+          font-size: 14px;
+          transition: color 0.3s ease;
+        }
+        .arch-arrow.active { color: var(--accent); }
 
         /* ── Feature cards ── */
         .feature-grid {
