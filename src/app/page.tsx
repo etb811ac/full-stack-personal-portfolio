@@ -8,6 +8,7 @@ import Footer from '@/components/ui/Footer';
 import HeroSection from '@/components/sections/HeroSection';
 import SolverSection from '@/components/sections/SolverSection';
 import ExpertiseSection from '@/components/sections/ExpertiseSection';
+import WorkSection from '@/components/sections/WorkSection';
 import ReviewsSection from '@/components/sections/ReviewsSection';
 import ContactSection from '@/components/sections/ContactSection';
 
@@ -47,10 +48,13 @@ export default function Home() {
           {/* 3. Expertise & Tech Stack */}
           <ExpertiseSection />
 
-          {/* 4. Reviews */}
+          {/* 4. Work */}
+          <WorkSection />
+
+          {/* 5. Reviews */}
           <ReviewsSection />
 
-          {/* 5. Contact */}
+          {/* 6. Contact */}
           <ContactSection />
         </main>
 
