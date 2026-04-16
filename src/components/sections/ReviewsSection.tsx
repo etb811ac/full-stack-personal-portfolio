@@ -71,7 +71,7 @@ export default function ReviewsSection() {
     >
       <div className="section-wrapper">
         <div className="section-num-col">
-          <span className="section-num">04</span>
+          <span className="section-num">05</span>
         </div>
         <div className="section-divider-line" />
         <div className="section-content-col">
