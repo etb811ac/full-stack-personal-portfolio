@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Bebas_Neue, Instrument_Serif, DM_Sans, IBM_Plex_Mono } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/context/ThemeProvider';
+import DevEasterEgg from '@/components/ui/DevEasterEgg';
 
 const bebasNeue = Bebas_Neue({
   weight: ['400'],
@@ -64,6 +65,7 @@ export default function RootLayout({
       className={`${bebasNeue.variable} ${instrumentSerif.variable} ${dmSans.variable} ${ibmPlexMono.variable}`}
     >
       <body>
+        <DevEasterEgg />
         <div className="top-accent-bar" />
         <ThemeProvider>
           {children}
