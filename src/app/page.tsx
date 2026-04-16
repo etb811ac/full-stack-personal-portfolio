@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import Navbar from '@/components/ui/Navbar';
 import Marquee from '@/components/ui/Marquee';
@@ -19,9 +19,20 @@ const PageLoader = dynamic(() => import('@/components/ui/PageLoader'), { ssr: fa
 export default function Home() {
   const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    if (sessionStorage.getItem('site-loaded')) {
+      setLoading(false);
+    }
+  }, []);
+
+  const handleLoaderComplete = () => {
+    sessionStorage.setItem('site-loaded', '1');
+    setLoading(false);
+  };
+
   return (
     <>
-      {loading && <PageLoader onComplete={() => setLoading(false)} />}
+      {loading && <PageLoader onComplete={handleLoaderComplete} />}
       <SmoothScroll />
 
       <div
