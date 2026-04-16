@@ -33,7 +33,7 @@ export default function Navbar() {
       }}
     >
       {/* Logo */}
-      <a href="#hero" style={{ display: 'flex', alignItems: 'baseline', gap: '2px', textDecoration: 'none' }}>
+      <a href="/#hero" style={{ display: 'flex', alignItems: 'baseline', gap: '2px', textDecoration: 'none' }}>
         <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', letterSpacing: '0.05em', color: 'var(--text-primary)' }}>
           ESTEBAN
         </span>
