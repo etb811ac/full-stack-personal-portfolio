@@ -526,9 +526,78 @@ export default function LavAppCaseStudy() {
           .outcome-grid { grid-template-columns: 1fr; }
         }
 
+        /* ── Hero dynamic background ── */
+        .cs-hero-bg {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          pointer-events: none;
+          z-index: 0;
+        }
+        .cs-orb {
+          position: absolute;
+          border-radius: 50%;
+          will-change: transform;
+        }
+        .cs-orb-1 {
+          width: 680px; height: 680px;
+          top: -200px; right: -140px;
+          background: radial-gradient(circle, rgba(255,107,53,0.13) 0%, transparent 65%);
+          filter: blur(80px);
+          animation: csOrb1 20s ease-in-out infinite;
+        }
+        .cs-orb-2 {
+          width: 520px; height: 520px;
+          bottom: -180px; left: -100px;
+          background: radial-gradient(circle, rgba(99,102,241,0.10) 0%, transparent 65%);
+          filter: blur(90px);
+          animation: csOrb2 26s ease-in-out infinite;
+        }
+        .cs-orb-3 {
+          width: 380px; height: 380px;
+          top: 45%; left: 38%;
+          background: radial-gradient(circle, rgba(255,107,53,0.06) 0%, transparent 65%);
+          filter: blur(70px);
+          animation: csOrb3 16s ease-in-out infinite;
+        }
+        .cs-hero-dots {
+          position: absolute;
+          inset: 0;
+          background-image: radial-gradient(circle, rgba(255,255,255,0.045) 1px, transparent 1px);
+          background-size: 28px 28px;
+          mask-image: linear-gradient(to bottom, transparent 4%, rgba(0,0,0,0.14) 22%, rgba(0,0,0,0.14) 78%, transparent 96%);
+          -webkit-mask-image: linear-gradient(to bottom, transparent 4%, rgba(0,0,0,0.14) 22%, rgba(0,0,0,0.14) 78%, transparent 96%);
+        }
+        [data-theme="light"] .cs-hero-dots {
+          background-image: radial-gradient(circle, rgba(0,0,0,0.07) 1px, transparent 1px);
+        }
+        .cs-hero-fade {
+          position: absolute;
+          bottom: 0; left: 0; right: 0;
+          height: 150px;
+          background: linear-gradient(to top, var(--bg-primary), transparent);
+          pointer-events: none;
+          z-index: 2;
+        }
+        @keyframes csOrb1 {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          33%       { transform: translate(-80px, 55px) scale(1.06); }
+          66%       { transform: translate(45px, -65px) scale(0.95); }
+        }
+        @keyframes csOrb2 {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          40%       { transform: translate(90px, -75px) scale(1.08); }
+          80%       { transform: translate(-55px, 45px) scale(0.96); }
+        }
+        @keyframes csOrb3 {
+          0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.7; }
+          50%       { transform: translate(-35px, -25px) scale(1.18); opacity: 1; }
+        }
+
         /* ── Reduced motion ── */
         @media (prefers-reduced-motion: reduce) {
           .cs-hero-reveal, .cs-chapter-reveal { opacity: 1 !important; transform: none !important; }
+          .cs-orb { animation: none !important; }
         }
       `}</style>
 
@@ -543,8 +612,19 @@ export default function LavAppCaseStudy() {
           <section style={{
             background: 'var(--gradient-hero)',
             padding: 'var(--space-6xl) 0 var(--space-4xl)',
+            position: 'relative',
+            overflow: 'hidden',
           }}>
-            <div className="section-wrapper">
+            {/* Dynamic background */}
+            <div className="cs-hero-bg" aria-hidden="true">
+              <div className="cs-orb cs-orb-1" />
+              <div className="cs-orb cs-orb-2" />
+              <div className="cs-orb cs-orb-3" />
+              <div className="cs-hero-dots" />
+            </div>
+            <div className="cs-hero-fade" aria-hidden="true" />
+
+            <div className="section-wrapper" style={{ position: 'relative', zIndex: 1 }}>
               <div className="section-num-col" />
               <div className="section-divider-line" />
               <div className="section-content-col" style={{ paddingTop: 0, paddingBottom: 0 }}>
