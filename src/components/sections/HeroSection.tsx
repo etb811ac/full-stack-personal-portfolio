@@ -144,7 +144,7 @@ export default function HeroSection() {
         {/* Main hero content */}
         <div className="section-content-col" style={{ padding: 0 }}>
           <div
-            className="w-full"
+            className="hero-inner w-full"
             style={{ padding: '0 var(--space-2xl)' }}
           >
             {/* Left: Content */}
@@ -277,6 +277,7 @@ export default function HeroSection() {
           .hero-name-display { font-size: clamp(3rem, 13vw, 4.5rem); }
           .hero-name-accent  { font-size: clamp(2.5rem, 12vw, 4rem); }
           .hero-left-vignette { display: none; }
+          .hero-inner { padding: 0 !important; }
         }
 
         /* Mobile overlay — hidden on tablet/desktop, visible on mobile */

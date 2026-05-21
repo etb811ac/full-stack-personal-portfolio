@@ -131,11 +131,11 @@ export default function ChatWidget() {
   };
 
   return (
-    <div className="fixed z-[900]" style={{ bottom: 'var(--space-xl)', right: 'var(--space-xl)' }}>
+    <div className={`chat-root fixed z-[900] ${isOpen ? 'chat-root--open' : ''}`} style={{ bottom: 'var(--space-xl)', right: 'var(--space-xl)' }}>
       {/* Chat Window */}
       {isOpen && (
         <div
-          className="absolute right-0 flex flex-col overflow-hidden"
+          className="chat-window absolute right-0 flex flex-col overflow-hidden"
           style={{
             bottom: 'calc(100% + var(--space-md))',
             width: '360px',
@@ -149,7 +149,7 @@ export default function ChatWidget() {
         >
           {/* Header */}
           <div
-            className="flex items-center justify-between shrink-0"
+            className="chat-header flex items-center justify-between shrink-0"
             style={{ padding: 'var(--space-md) var(--space-lg)', borderBottom: '1px solid var(--border)' }}
           >
             <div className="flex items-center gap-2">
@@ -160,8 +160,9 @@ export default function ChatWidget() {
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="cursor-pointer border-none bg-transparent p-1 transition-colors flex items-center justify-center"
-              style={{ color: 'var(--text-tertiary)' }}
+              className="chat-close cursor-pointer border-none bg-transparent transition-colors flex items-center justify-center"
+              style={{ color: 'var(--text-tertiary)', padding: '4px' }}
+              aria-label="Close chat"
             >
               <CloseIcon />
             </button>
@@ -242,7 +243,7 @@ export default function ChatWidget() {
 
           {/* Input */}
           <div
-            className="flex shrink-0"
+            className="chat-inputbar flex shrink-0 items-center"
             style={{ padding: 'var(--space-md) var(--space-lg)', borderTop: '1px solid var(--border)', gap: 'var(--space-sm)' }}
           >
             <input
@@ -253,7 +254,7 @@ export default function ChatWidget() {
               onKeyDown={handleKeyDown}
               placeholder="Ask about skills, projects..."
               disabled={streaming}
-              className="flex-1 text-sm outline-none"
+              className="chat-input flex-1 text-sm outline-none"
               style={{
                 fontFamily: 'var(--font-body)',
                 padding: 'var(--space-sm) var(--space-md)',
@@ -267,8 +268,9 @@ export default function ChatWidget() {
             <button
               onClick={send}
               disabled={streaming || !input.trim()}
-              className="w-9 h-9 rounded-full flex items-center justify-center border-none cursor-pointer transition-transform hover:scale-105 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="chat-send w-9 h-9 shrink-0 rounded-full flex items-center justify-center border-none cursor-pointer transition-transform hover:scale-105 disabled:opacity-40 disabled:cursor-not-allowed"
               style={{ background: 'var(--text-primary)', color: 'var(--text-inverse)' }}
+              aria-label="Send message"
             >
               <SendIcon />
             </button>
@@ -297,8 +299,9 @@ export default function ChatWidget() {
       {/* Bubble */}
       <div
         onClick={() => { setIsOpen(!isOpen); setShowTooltip(false); }}
-        className="w-[60px] h-[60px] rounded-full flex items-center justify-center cursor-pointer relative transition-transform hover:scale-110"
+        className="chat-bubble w-[60px] h-[60px] rounded-full flex items-center justify-center cursor-pointer relative transition-transform hover:scale-110"
         style={{ background: 'linear-gradient(135deg, var(--text-primary), var(--text-secondary))', boxShadow: 'var(--shadow-lg)' }}
+        aria-label={isOpen ? 'Close chat' : 'Open AI chat'}
       >
         <div
           className="absolute -inset-1 rounded-full border-2 opacity-0"
@@ -314,6 +317,10 @@ export default function ChatWidget() {
           from { opacity: 0; transform: translateY(20px) scale(0.95); }
           to   { opacity: 1; transform: translateY(0) scale(1); }
         }
+        @keyframes chatSheetUp {
+          from { opacity: 0; transform: translateY(40px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
         @keyframes chatPulse {
           0%   { opacity: 0.4; transform: scale(1);   }
           100% { opacity: 0;   transform: scale(1.4); }
@@ -321,6 +328,45 @@ export default function ChatWidget() {
         @keyframes blink {
           0%, 100% { opacity: 1; }
           50%       { opacity: 0; }
+        }
+
+        /* Mobile: convert popover to bottom-anchored sheet */
+        @media (max-width: 767px) {
+          .chat-root {
+            bottom: var(--space-md) !important;
+            right: var(--space-md) !important;
+          }
+          .chat-root--open {
+            z-index: 1100 !important;
+          }
+          .chat-window {
+            position: fixed !important;
+            left: 12px !important;
+            right: 12px !important;
+            top: 12px !important;
+            bottom: 84px !important;
+            width: auto !important;
+            height: auto !important;
+            border-radius: 20px !important;
+            animation: chatSheetUp 0.32s cubic-bezier(0.16, 1, 0.3, 1) !important;
+          }
+          .chat-header {
+            padding: var(--space-md) var(--space-md) !important;
+          }
+          .chat-close {
+            width: 36px;
+            height: 36px;
+            margin: -6px;
+          }
+          .chat-inputbar {
+            padding: var(--space-sm) var(--space-md) calc(var(--space-sm) + env(safe-area-inset-bottom, 0px)) !important;
+          }
+          .chat-send {
+            width: 40px !important;
+            height: 40px !important;
+          }
+          /* Hide the bubble while the sheet is open so it doesn't peek through */
+          .chat-root--open .chat-bubble { display: none !important; }
         }
       `}</style>
     </div>

@@ -231,10 +231,19 @@ a {
     padding: 0 var(--space-lg);
   }
   .section-content-col {
-    padding: var(--space-4xl) 0;
+    padding: var(--space-3xl) 0;
   }
   .expertise-grid {
     grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Prevent iOS auto-zoom on focus: inputs must be >=16px to avoid it.
+     Visual scale is preserved because the form/chat widget styling
+     compensates via padding, not font-size. */
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
   }
 }
 
