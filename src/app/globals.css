@@ -245,6 +245,14 @@ a {
   select {
     font-size: 16px !important;
   }
+
+  /* Tighter card padding on mobile (overrides inline styles via !important) */
+  .review-card {
+    padding: var(--space-xl) var(--space-lg) !important;
+  }
+  .expertise-card {
+    padding: var(--space-lg) var(--space-sm) !important;
+  }
 }
 
 @media (min-width: 769px) and (max-width: 1024px) {

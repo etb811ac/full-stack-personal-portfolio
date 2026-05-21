@@ -230,9 +230,9 @@ export default function HeroSection() {
         </div>
       </div>
 
-      {/* Scroll indicator */}
+      {/* Scroll indicator (desktop/tablet only — would overlap CTAs on mobile) */}
       <div
-        className="absolute left-1/2 -translate-x-1/2 z-10 flex flex-col items-center"
+        className="hero-scroll-indicator absolute left-1/2 -translate-x-1/2 z-10 flex flex-col items-center"
         style={{
           bottom: 'var(--space-3xl)',
           gap: 'var(--space-sm)',
@@ -278,6 +278,7 @@ export default function HeroSection() {
           .hero-name-accent  { font-size: clamp(2.5rem, 12vw, 4rem); }
           .hero-left-vignette { display: none; }
           .hero-inner { padding: 0 !important; }
+          .hero-scroll-indicator { display: none; }
         }
 
         /* Mobile overlay — hidden on tablet/desktop, visible on mobile */

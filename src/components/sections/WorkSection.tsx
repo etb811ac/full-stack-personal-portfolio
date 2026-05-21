@@ -236,6 +236,12 @@ export default function WorkSection() {
           .work-card { grid-template-columns: 1fr; }
           .queue-mock { display: none; }
         }
+        @media (max-width: 767px) {
+          .work-card {
+            padding: var(--space-lg);
+            gap: var(--space-lg);
+          }
+        }
         @media (prefers-reduced-motion: reduce) {
           .work-reveal { opacity: 1 !important; transform: none !important; }
           .work-card { opacity: 1 !important; transform: none !important; }
