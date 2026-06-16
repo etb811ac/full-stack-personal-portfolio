@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<h1 align="center">Esteban Acuña — Portfolio</h1>
 
-## Getting Started
+<p align="center">My personal portfolio: a full-stack Next.js site where interactive 3D, smooth motion, and an AI chat assistant come together. Built where code meets craft.</p>
 
-First, run the development server:
+<p align="center">
+  <a href="https://estebanacuna.dev"><img src="https://img.shields.io/badge/▶%20Visit-estebanacuna.dev-FF4D00?style=for-the-badge" alt="Live Site"></a>
+</p>
+
+<p align="center">
+  <img src=".github/preview.png" alt="Portfolio preview" width="720">
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Next.js-000000?logo=next.js&logoColor=white">
+  <img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white">
+  <img src="https://img.shields.io/badge/React%20Three%20Fiber-000000?logo=three.js&logoColor=white">
+  <img src="https://img.shields.io/badge/GSAP-88CE02?logo=greensock&logoColor=black">
+  <img src="https://img.shields.io/badge/Tailwind%20CSS-06B6D4?logo=tailwindcss&logoColor=white">
+  <img src="https://img.shields.io/badge/Claude%20API-D97757?logo=anthropic&logoColor=white">
+</p>
+
+## Highlights
+
+- 🎨 **Interactive 3D** — React Three Fiber + drei scenes in the hero and "solver" sections
+- 🤖 **AI chat assistant** — a built-in chat widget backed by the Claude API (`/api/chat`) that can answer questions about me and my work
+- 🌀 **Buttery-smooth motion** — Lenis smooth scrolling paired with GSAP-driven animations and a polished page loader
+- 🌗 **Light / dark themes** with `next-themes`
+- 🧩 **Section-based architecture** — Hero, Expertise, Work, Reviews, Contact, plus dedicated work case-study pages
+- 🥚 A little dev easter egg, because why not
+
+## Tech stack
+
+**Framework:** Next.js (App Router) · TypeScript
+**3D / motion:** React Three Fiber · drei · Three.js · GSAP · Lenis
+**Styling:** Tailwind CSS
+**AI:** Anthropic Claude API
+**Deploy:** Vercel
+
+## Run locally
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev      # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+To enable the AI chat locally, add your Anthropic key to `.env.local`:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+ANTHROPIC_API_KEY=your_key_here
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build    # production build
+npm run start    # serve the production build
+```
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+<p align="center"><i>Made by Esteban Acuña · <a href="https://estebanacuna.dev">estebanacuna.dev</a> · <a href="https://www.linkedin.com/in/esteban-acu%C3%B1a/">LinkedIn</a></i></p>
