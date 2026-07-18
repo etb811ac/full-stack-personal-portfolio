@@ -9,6 +9,7 @@ import HeroSection from '@/components/sections/HeroSection';
 import SolverSection from '@/components/sections/SolverSection';
 import ExpertiseSection from '@/components/sections/ExpertiseSection';
 import WorkSection from '@/components/sections/WorkSection';
+import ExperimentsSection from '@/components/sections/ExperimentsSection';
 import ReviewsSection from '@/components/sections/ReviewsSection';
 import ContactSection from '@/components/sections/ContactSection';
 
@@ -50,7 +51,7 @@ export default function Home() {
 
           {/* Marquee divider */}
           <Marquee
-            items={['Developer', 'Maker', 'Problem Solver', 'Builder', 'Tinkerer', 'Full-Stack', 'Creative']}
+            items={['Developer', 'AI Engineer', 'Problem Solver', 'Builder', 'Full-Stack', 'Creative']}
           />
 
           {/* 2. Problem Solver */}
@@ -62,10 +63,13 @@ export default function Home() {
           {/* 4. Work */}
           <WorkSection />
 
-          {/* 5. Reviews */}
+          {/* 5. Experiments */}
+          <ExperimentsSection />
+
+          {/* 6. Reviews */}
           <ReviewsSection />
 
-          {/* 6. Contact */}
+          {/* 7. Contact */}
           <ContactSection />
         </main>
 

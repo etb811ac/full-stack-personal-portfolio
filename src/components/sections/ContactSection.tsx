@@ -105,11 +105,11 @@ export default function ContactSection() {
     >
       <div className="section-wrapper">
         <div className="section-num-col">
-          <span className="section-num">06</span>
+          <span className="section-num">07</span>
         </div>
         <div className="section-divider-line" />
         <div className="section-content-col">
-          <span className="section-overline contact-reveal opacity-0">06 — Contact</span>
+          <span className="section-overline contact-reveal opacity-0">07 — Contact</span>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 items-start" style={{ gap: 'var(--space-4xl)' }}>
             {/* Left: Content */}

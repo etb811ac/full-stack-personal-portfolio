@@ -71,11 +71,11 @@ export default function ReviewsSection() {
     >
       <div className="section-wrapper">
         <div className="section-num-col">
-          <span className="section-num">05</span>
+          <span className="section-num">06</span>
         </div>
         <div className="section-divider-line" />
         <div className="section-content-col">
-          <span className="section-overline review-reveal opacity-0">05 — Reviews</span>
+          <span className="section-overline review-reveal opacity-0">06 — Reviews</span>
 
           <div className="text-center max-w-[600px] mx-auto" style={{ marginBottom: 'var(--space-4xl)' }}>
             <h2
