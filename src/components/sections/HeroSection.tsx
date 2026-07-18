@@ -201,7 +201,7 @@ export default function HeroSection() {
                   marginBottom: 'var(--space-lg)',
                 }}
               >
-                // Full-Stack Developer
+                {'// Full-Stack Developer & AI Engineer'}
               </p>
 
               {/* Subtitle */}

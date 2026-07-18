@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 
 export const runtime = 'edge';
-export const alt = 'Esteban Acuña — Full-Stack Developer & Maker';
+export const alt = 'Esteban Acuña — Full-Stack Developer & AI Engineer';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -45,7 +45,7 @@ export default function Image() {
             display: 'flex',
           }}
         >
-          // Portfolio
+          {'// Portfolio'}
         </div>
 
         {/* ESTEBAN */}
@@ -87,7 +87,7 @@ export default function Image() {
             display: 'flex',
           }}
         >
-          Full-Stack Developer &amp; Maker
+          Full-Stack Developer &amp; AI Engineer
         </div>
 
         {/* Bottom divider */}
