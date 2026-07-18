@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   siNextdotjs, siReact, siThreedotjs, siGreensock,
   siTailwindcss, siPython, siDjango, siLangchain,
   siGraphql, siDocker, siTypescript, siNodedotjs,
   siPostgresql, siGit, siVercel, siFigma, siKubernetes, siRedis,
+  siClaude, siCursor, siV0, siOllama,
 } from 'simple-icons';
 import type { SimpleIcon } from 'simple-icons';
 
@@ -23,17 +24,28 @@ interface MarqueeItem {
   color: string;
 }
 
-const FEATURED: TechItem[] = [
+const FRONTEND: TechItem[] = [
   { icon: siNextdotjs,  name: 'Next.js',    desc: 'React Framework', detail: 'App Router · SSR · ISR · Server Actions',  color: '#e2e2e2' },
   { icon: siReact,      name: 'React',      desc: 'UI Library',      detail: 'Hooks · Context · Suspense · RSC',          color: '#61DAFB' },
   { icon: siThreedotjs, name: 'Three.js',   desc: '3D / WebGL',      detail: 'R3F · Shaders · Post-processing',           color: '#e2e2e2' },
   { icon: siGreensock,  name: 'GSAP',       desc: 'Animation',       detail: 'ScrollTrigger · SplitText · MotionPath',    color: '#88CE02' },
   { icon: siTailwindcss,name: 'Tailwind',   desc: 'Styling',         detail: 'Design systems · Responsive · Motion',      color: '#06B6D4' },
+];
+
+const BACKEND: TechItem[] = [
   { icon: siPython,     name: 'Python',     desc: 'Backend',         detail: 'Async · Typing · Data pipelines',           color: '#3776AB' },
   { icon: siDjango,     name: 'Django',     desc: 'Web Framework',   detail: 'DRF · ORM · Admin · Channels',              color: '#44B78B' },
-  { icon: siLangchain,  name: 'LangChain',  desc: 'AI / LLM',        detail: 'RAG · Agents · Embeddings · Chains',        color: '#22D3AA' },
+  { icon: siPostgresql, name: 'PostgreSQL', desc: 'Database',        detail: 'Modeling · Indexing · Query tuning',        color: '#4169E1' },
   { icon: siGraphql,    name: 'GraphQL',    desc: 'API Layer',       detail: 'Apollo · Subscriptions · Federation',       color: '#E10098' },
   { icon: siDocker,     name: 'Docker',     desc: 'DevOps',          detail: 'Compose · CI/CD · GitHub Actions',          color: '#2496ED' },
+];
+
+const AI_TOOLS: TechItem[] = [
+  { icon: siClaude,     name: 'Claude Code', desc: 'Agentic Coding', detail: 'Subagents · MCP · Automated workflows',     color: '#D97757' },
+  { icon: siCursor,     name: 'Cursor',      desc: 'AI-First IDE',   detail: 'Composer · Codebase context · Rules',       color: '#e2e2e2' },
+  { icon: siLangchain,  name: 'LangChain',   desc: 'LLM Framework',  detail: 'RAG · Agents · Embeddings · Chains',        color: '#22D3AA' },
+  { icon: siV0,         name: 'v0',          desc: 'Generative UI',  detail: 'Prompt-to-component · Rapid prototyping',   color: '#e2e2e2' },
+  { icon: siOllama,     name: 'Ollama',      desc: 'Local LLMs',     detail: 'Self-hosted models · Offline inference',    color: '#e2e2e2' },
 ];
 
 const MARQUEE_ITEMS: MarqueeItem[] = [
@@ -55,6 +67,10 @@ const MARQUEE_ITEMS: MarqueeItem[] = [
   { icon: siGraphql,     name: 'GraphQL',     color: '#E10098' },
   { icon: siDocker,      name: 'Docker',      color: '#2496ED' },
   { icon: siLangchain,   name: 'LangChain',   color: '#22D3AA' },
+  { icon: siClaude,      name: 'Claude Code', color: '#D97757' },
+  { icon: siCursor,      name: 'Cursor',      color: '#e2e2e2' },
+  { icon: siV0,          name: 'v0',          color: '#e2e2e2' },
+  { icon: siOllama,      name: 'Ollama',      color: '#e2e2e2' },
 ];
 
 function SIIcon({ icon, size = 24 }: { icon: SimpleIcon; size?: number }) {
@@ -316,7 +332,7 @@ export default function ExpertiseSection() {
                 className="expertise-reveal opacity-0"
                 style={{ color: 'var(--text-secondary)', fontSize: '1.125rem' }}
               >
-                Technologies I use to bring ideas to life — from interactive frontends to intelligent backends.
+                Technologies I use to bring ideas to life — from interactive frontends to intelligent backends, with AI agents woven into the workflow.
               </p>
             </div>
 
@@ -336,49 +352,35 @@ export default function ExpertiseSection() {
                 gap: 'var(--space-md)',
               }}
             >
-              <div
-                className="expertise-reveal opacity-0"
-                style={{
-                  gridColumn: '1 / -1',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 'var(--space-md)',
-                  paddingBottom: 'var(--space-sm)',
-                  borderBottom: '1px solid var(--border)',
-                  marginBottom: 'var(--space-xs)',
-                }}
-              >
-                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent)', display: 'inline-block', flexShrink: 0 }} />
-                <span style={{ fontFamily: 'var(--font-display)', fontSize: '0.8125rem', color: 'var(--text-tertiary)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                  Frontend &amp; Creative
-                </span>
-              </div>
+              {[
+                { label: 'Frontend & Creative', items: FRONTEND, first: true },
+                { label: 'Backend & Data', items: BACKEND, first: false },
+                { label: 'AI & Agentic Tooling', items: AI_TOOLS, first: false },
+              ].map((group) => (
+                <React.Fragment key={group.label}>
+                  <div
+                    className="expertise-reveal opacity-0"
+                    style={{
+                      gridColumn: '1 / -1',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 'var(--space-md)',
+                      paddingBottom: 'var(--space-sm)',
+                      borderBottom: '1px solid var(--border)',
+                      marginBottom: 'var(--space-xs)',
+                      marginTop: group.first ? undefined : 'var(--space-md)',
+                    }}
+                  >
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent)', display: 'inline-block', flexShrink: 0 }} />
+                    <span style={{ fontFamily: 'var(--font-display)', fontSize: '0.8125rem', color: 'var(--text-tertiary)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                      {group.label}
+                    </span>
+                  </div>
 
-              {FEATURED.slice(0, 5).map((tech) => (
-                <TechCard key={tech.name} tech={tech} />
-              ))}
-
-              <div
-                className="expertise-reveal opacity-0"
-                style={{
-                  gridColumn: '1 / -1',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 'var(--space-md)',
-                  paddingBottom: 'var(--space-sm)',
-                  borderBottom: '1px solid var(--border)',
-                  marginBottom: 'var(--space-xs)',
-                  marginTop: 'var(--space-md)',
-                }}
-              >
-                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent)', display: 'inline-block', flexShrink: 0 }} />
-                <span style={{ fontFamily: 'var(--font-display)', fontSize: '0.8125rem', color: 'var(--text-tertiary)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                  Backend &amp; Intelligence
-                </span>
-              </div>
-
-              {FEATURED.slice(5).map((tech) => (
-                <TechCard key={tech.name} tech={tech} />
+                  {group.items.map((tech) => (
+                    <TechCard key={tech.name} tech={tech} />
+                  ))}
+                </React.Fragment>
               ))}
             </div>
 
