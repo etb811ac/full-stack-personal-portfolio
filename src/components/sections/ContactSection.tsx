@@ -27,8 +27,19 @@ function LinkedInIcon() {
   );
 }
 
+function DownloadIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width={18} height={18} fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <path d="m7 10 5 5 5-5" />
+      <path d="M12 15V3" />
+    </svg>
+  );
+}
+
 const contactLinks = [
   { Icon: MailIcon,     label: 'Send me a message',             href: '#contact-form' },
+  { Icon: DownloadIcon, label: 'Download my CV (PDF)',          href: '/cv/esteban-acuna-cv.pdf', download: true },
   { Icon: GitHubIcon,   label: 'github.com/etb811ac',           href: 'https://github.com/etb811ac',                          target: '_blank' },
   { Icon: LinkedInIcon, label: 'linkedin.com/in/esteban-acuña', href: 'https://www.linkedin.com/in/esteban-acu%C3%B1a/',      target: '_blank' },
 ];
@@ -141,6 +152,7 @@ export default function ContactSection() {
                     href={link.href}
                     target={'target' in link ? link.target : undefined}
                     rel={'target' in link ? 'noopener noreferrer' : undefined}
+                    download={'download' in link ? '' : undefined}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
