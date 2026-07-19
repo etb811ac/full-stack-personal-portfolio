@@ -248,6 +248,7 @@ export default function CvPage() {
       <Footer />
       <style>{`
         @media print {
+          html, body { background: #ffffff !important; }
           nav, footer, .cv-actions, .top-accent-bar { display: none !important; }
           .cv-page { padding: 0 !important; background: #ffffff !important; }
           .cv-page, .cv-page * { color: #111111 !important; }
