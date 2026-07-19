@@ -206,6 +206,20 @@ export default function ChatWidget() {
                       ol:     ({ children }) => <ol style={{ paddingLeft: '1.25em', margin: '0.25em 0' }}>{children}</ol>,
                       li:     ({ children }) => <li style={{ margin: '0.15em 0' }}>{children}</li>,
                       strong: ({ children }) => <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{children}</strong>,
+                      a: ({ children, href }) => (
+                        <a
+                          href={href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            color: 'var(--accent)',
+                            textDecoration: 'underline',
+                            textUnderlineOffset: '3px',
+                          }}
+                        >
+                          {children}
+                        </a>
+                      ),
                       code:   ({ children }) => (
                         <code style={{
                           fontFamily: 'var(--font-mono)',
