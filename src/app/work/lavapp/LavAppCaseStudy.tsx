@@ -109,6 +109,102 @@ function ArchDiagram() {
   );
 }
 
+// ── System design layered diagram ─────────────────────────────────────────────
+
+const SYS_TIERS = [
+  {
+    key: 'client',
+    label: 'Client',
+    items: [
+      { name: 'Dashboard', sub: 'staff Kanban' },
+      { name: 'Status page', sub: 'customers' },
+      { name: 'Admin', sub: 'platform' },
+    ],
+  },
+  {
+    key: 'edge',
+    label: 'Edge',
+    items: [
+      { name: 'Next.js middleware', sub: 'session auth + tenant context on every request' },
+    ],
+  },
+  {
+    key: 'app',
+    label: 'App layer',
+    items: [
+      { name: '(auth) · (dashboard) · (admin)', sub: 'route groups' },
+      { name: 'queue · payments · whatsapp · ai · email · employees', sub: 'API domains' },
+    ],
+  },
+  {
+    key: 'data',
+    label: 'Data',
+    items: [
+      { name: 'Supabase Postgres + RLS', sub: '17 incremental migrations' },
+    ],
+  },
+  {
+    key: 'external',
+    label: 'External',
+    items: [
+      { name: 'Paddle', sub: '⇄ webhooks' },
+      { name: 'WhatsApp', sub: '→ outbound' },
+      { name: 'Claude', sub: '→ outbound' },
+      { name: 'Resend', sub: '→ outbound' },
+    ],
+  },
+];
+
+const SYS_NOTES = [
+  { label: 'Client', note: 'Three surfaces, one codebase — staff dashboard, customer status page, platform admin.' },
+  { label: 'Edge', note: 'Middleware resolves the session and tenant before any page renders.' },
+  { label: 'App layer', note: 'Route groups separate concerns; API routes are grouped by domain, not by verb.' },
+  { label: 'Data', note: 'Tenant isolation lives in Postgres RLS policies, not application code.' },
+  { label: 'External', note: 'Billing state is webhook-driven, never polled; notifications are fire-and-forget outbound.' },
+];
+
+function SystemDesignDiagram() {
+  const [activeIdx, setActiveIdx] = useState(0);
+
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const id = setInterval(() => setActiveIdx(n => (n + 1) % SYS_TIERS.length), 900);
+    return () => clearInterval(id);
+  }, []);
+
+  const renderTier = (idx: number) => {
+    const tier = SYS_TIERS[idx];
+    return (
+      <div className={`sd-tier${activeIdx === idx ? ' active' : ''}`}>
+        <span className="sd-tier-label">{tier.label}</span>
+        <div className="sd-tier-items">
+          {tier.items.map((it) => (
+            <div key={it.name} className="sd-item">
+              {it.name}
+              <span>{it.sub}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="sd-diagram">
+      {renderTier(0)}
+      <div className="sd-connector" aria-hidden="true" />
+      {renderTier(1)}
+      <div className="sd-connector" aria-hidden="true" />
+      {renderTier(2)}
+      <div className="sd-connector" aria-hidden="true" />
+      <div className="sd-split">
+        {renderTier(3)}
+        {renderTier(4)}
+      </div>
+    </div>
+  );
+}
+
 // ── Chapters ──────────────────────────────────────────────────────────────────
 
 const CHAPTERS = [
@@ -158,6 +254,29 @@ const CHAPTERS = [
   },
   {
     num: '03',
+    label: 'System Design',
+    title: 'How the app is structured',
+    content: (
+      <>
+        <p>
+          The app is structured in layers. Every request passes through Next.js middleware — which
+          resolves the session and tenant — before it reaches a page or API route. Tenant isolation
+          is enforced in the database, and third-party state arrives via webhooks rather than polling.
+        </p>
+        <SystemDesignDiagram />
+        <div className="sd-notes">
+          {SYS_NOTES.map((n) => (
+            <div key={n.label} className="sd-note">
+              <span className="sd-note-label">{n.label}</span>
+              <span className="sd-note-text">{n.note}</span>
+            </div>
+          ))}
+        </div>
+      </>
+    ),
+  },
+  {
+    num: '04',
     label: 'Key Features',
     title: "Every tool a car wash needs, nothing it doesn't",
     content: (
@@ -179,7 +298,7 @@ const CHAPTERS = [
     ),
   },
   {
-    num: '04',
+    num: '05',
     label: 'Tech Deep-Dives',
     title: 'Four decisions worth talking about',
     content: (
@@ -200,7 +319,7 @@ const CHAPTERS = [
     ),
   },
   {
-    num: '05',
+    num: '06',
     label: 'Outcome',
     title: 'Shipped, live, and in use',
     content: (
@@ -404,6 +523,93 @@ export default function LavAppCaseStudy() {
         }
         .arch-arrow.active { color: var(--accent); }
 
+        /* ── System design diagram ── */
+        .sd-diagram {
+          margin-top: var(--space-xl);
+          display: flex;
+          flex-direction: column;
+        }
+        .sd-tier {
+          border: 1px solid var(--border);
+          border-radius: 2px;
+          background: var(--bg-secondary);
+          padding: 12px 14px;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .sd-tier.active {
+          border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+          box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 12%, transparent);
+        }
+        .sd-tier-label {
+          font-family: var(--font-mono);
+          font-size: 9px;
+          letter-spacing: 2px;
+          text-transform: uppercase;
+          color: var(--text-tertiary);
+          transition: color 0.3s ease;
+        }
+        .sd-tier.active .sd-tier-label { color: var(--accent); }
+        .sd-tier-items {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+        }
+        .sd-item {
+          padding: 6px 10px;
+          border: 1px solid var(--border);
+          border-radius: 2px;
+          font-family: var(--font-mono);
+          font-size: 10.5px;
+          color: var(--text-secondary);
+          background: var(--bg-primary);
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+        .sd-item span { font-size: 9px; color: var(--text-tertiary); }
+        .sd-connector {
+          width: 1px;
+          height: 14px;
+          margin-left: 28px;
+          background: linear-gradient(to bottom, var(--accent), color-mix(in srgb, var(--accent) 25%, transparent));
+        }
+        .sd-split {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
+        }
+
+        /* ── Layer notes ── */
+        .sd-notes {
+          margin-top: var(--space-xl);
+          display: flex;
+          flex-direction: column;
+        }
+        .sd-note {
+          display: grid;
+          grid-template-columns: 92px 1fr;
+          gap: var(--space-md);
+          padding: 10px 0;
+          border-bottom: 1px solid var(--border);
+          align-items: baseline;
+        }
+        .sd-note:last-child { border-bottom: none; }
+        .sd-note-label {
+          font-family: var(--font-mono);
+          font-size: 9px;
+          letter-spacing: 2px;
+          text-transform: uppercase;
+          color: var(--accent);
+        }
+        .sd-note-text {
+          font-size: 0.85rem;
+          color: var(--text-tertiary);
+          line-height: 1.6;
+        }
+
         /* ── Feature cards ── */
         .feature-grid {
           display: grid;
@@ -524,6 +730,8 @@ export default function LavAppCaseStudy() {
           .feature-grid { grid-template-columns: 1fr; }
           .cs-deep-card { grid-template-columns: 1fr; }
           .outcome-grid { grid-template-columns: 1fr; }
+          .sd-split { grid-template-columns: 1fr; }
+          .sd-note { grid-template-columns: 1fr; gap: 2px; }
         }
 
         /* ── Hero dynamic background ── */
